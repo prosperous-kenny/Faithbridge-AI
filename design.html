@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FaithBridge AI — Design Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&amp;display=swap" />
+<style>
+  :root {
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Source Serif 4", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --primary-50: #eef2ff;
+    --primary-100: #e0e7ff;
+    --primary-200: #c7d2fe;
+    --primary-300: #a5b4fc;
+    --primary-400: #818cf8;
+    --primary-500: #6366f1;
+    --primary-600: #4f46e5;
+    --primary-700: #4338ca;
+    --primary-800: #3730a3;
+    --primary-900: #312e81;
+    --primary-950: #1e1b4b;
+
+    --accent-50: #fffbeb;
+    --accent-100: #fef3c7;
+    --accent-200: #fde68a;
+    --accent-300: #fcd34d;
+    --accent-400: #fbbf24;
+    --accent-500: #f59e0b;
+    --accent-600: #d97706;
+    --accent-700: #b45309;
+    --accent-800: #92400e;
+    --accent-900: #78350f;
+
+    --neutral-0: #ffffff;
+    --neutral-50: #f8fafc;
+    --neutral-100: #f1f5f9;
+    --neutral-200: #e2e8f0;
+    --neutral-300: #cbd5e1;
+    --neutral-400: #94a3b8;
+    --neutral-500: #64748b;
+    --neutral-600: #475569;
+    --neutral-700: #334155;
+    --neutral-800: #1e293b;
+    --neutral-900: #0f172a;
+    --neutral-950: #020617;
+
+    --success-600: #16a34a;
+    --success-50: #f0fdf4;
+    --warning-600: #d97706;
+    --warning-50: #fffbeb;
+    --danger-600: #dc2626;
+    --danger-50: #fef2f2;
+    --info-600: #2563eb;
+    --info-50: #eff6ff;
+
+    --text-strong: var(--neutral-900);
+    --text-body: var(--neutral-700);
+    --text-muted: var(--neutral-500);
+    --text-subtle: var(--neutral-400);
+    --text-on-primary: #ffffff;
+
+    --bg-page: var(--neutral-50);
+    --bg-surface: var(--neutral-0);
+    --bg-subtle: var(--neutral-100);
+    --border: var(--neutral-200);
+    --border-strong: var(--neutral-300);
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 999px;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+    --shadow-md: 0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.10);
+
+    --ring: 0 0 0 3px var(--primary-200);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text-body);
+    background: var(--bg-page);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: var(--space-16) var(--space-6) var(--space-16); }
+
+  .masthead { border-bottom: 1px solid var(--border); background: var(--bg-surface); }
+  .masthead .wrap { padding-top: var(--space-12); padding-bottom: var(--space-10); }
+
+  .eyebrow {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--primary-600);
+    margin: 0 0 var(--space-3);
+  }
+
+  h1.display { font-family: var(--font-display); font-size: 48px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; color: var(--text-strong); margin: 0 0 var(--space-4); }
+  h2.section { font-family: var(--font-display); font-size: 30px; line-height: 1.25; font-weight: 700; letter-spacing: -0.005em; color: var(--text-strong); margin: 0 0 var(--space-2); }
+  h3 { font-size: 20px; line-height: 1.4; font-weight: 600; color: var(--text-strong); margin: 0 0 var(--space-2); }
+  h4 { font-size: 18px; line-height: 1.4; font-weight: 600; color: var(--text-strong); margin: 0 0 var(--space-2); }
+  p { margin: 0 0 var(--space-4); }
+  p:last-child { margin-bottom: 0; }
+
+  .lede { font-size: 18px; line-height: 1.65; color: var(--text-muted); max-width: 62ch; }
+  .note { font-size: 14px; line-height: 1.55; color: var(--text-muted); max-width: 72ch; }
+  .meta { font-size: 13px; line-height: 1.5; color: var(--text-muted); }
+
+  code, .mono { font-family: var(--font-mono); font-size: 0.875em; }
+
+  .token {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    padding: 1px 6px;
+  }
+
+  section { margin-top: var(--space-16); }
+  .section-head { border-top: 2px solid var(--neutral-900); padding-top: var(--space-6); margin-bottom: var(--space-8); }
+  .section-index { font-size: 13px; font-weight: 600; color: var(--text-subtle); font-family: var(--font-mono); }
+
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .grid { display: grid; gap: var(--space-6); }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+  .ramp { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 2px; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border); }
+  .ramp-cell { min-height: 84px; padding: var(--space-2); display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; cursor: pointer; border: 0; font: inherit; text-align: left; }
+  .ramp-cell:hover { outline: 2px solid var(--neutral-900); outline-offset: -2px; }
+  .ramp-cell .step { font-size: 11px; font-weight: 600; font-family: var(--font-mono); opacity: 0.85; }
+  .ramp-cell .hex { font-size: 11px; font-family: var(--font-mono); }
+
+  .ramp-label { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
+  .ramp-role { font-size: 14px; color: var(--text-muted); }
+
+  .semantics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); }
+  .semantic { border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+  .semantic .chip { height: 56px; }
+  .semantic .body { padding: var(--space-3) var(--space-4); background: var(--bg-surface); }
+  .semantic .name { font-size: 13px; font-weight: 600; color: var(--text-strong); }
+  .semantic .use { font-size: 12px; color: var(--text-muted); }
+
+  .specimen { border-top: 1px solid var(--border); padding: var(--space-5) 0; }
+  .specimen:first-of-type { border-top: 0; }
+  .specimen .meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); margin-top: var(--space-2); }
+
+  .type-display { font-family: var(--font-display); font-size: 48px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; color: var(--text-strong); }
+  .type-h1 { font-family: var(--font-display); font-size: 36px; line-height: 1.2; font-weight: 700; letter-spacing: -0.005em; color: var(--text-strong); }
+  .type-h2 { font-family: var(--font-display); font-size: 30px; line-height: 1.25; font-weight: 700; color: var(--text-strong); }
+  .type-h3 { font-size: 24px; line-height: 1.3; font-weight: 600; color: var(--text-strong); }
+  .type-h4 { font-size: 20px; line-height: 1.4; font-weight: 600; color: var(--text-strong); }
+  .type-body-lg { font-size: 18px; line-height: 1.65; }
+  .type-body { font-size: 16px; line-height: 1.6; }
+  .type-body-sm { font-size: 14px; line-height: 1.55; }
+  .type-caption { font-size: 13px; line-height: 1.5; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    font-family: inherit;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+    white-space: nowrap;
+  }
+  .btn:focus-visible { outline: none; box-shadow: var(--ring); }
+  .btn:disabled { cursor: not-allowed; opacity: 0.55; box-shadow: none; }
+
+  .btn-md { font-size: 15px; padding: 10px 18px; min-height: 42px; }
+  .btn-sm { font-size: 14px; padding: 6px 12px; min-height: 34px; }
+  .btn-lg { font-size: 16px; padding: 14px 24px; min-height: 50px; }
+
+  .btn-primary { background: var(--primary-600); color: var(--text-on-primary); box-shadow: var(--shadow-sm); }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-700); }
+
+  .btn-secondary { background: var(--bg-surface); color: var(--primary-700); border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+  .btn-secondary:hover:not(:disabled) { background: var(--primary-50); border-color: var(--primary-300); }
+
+  .btn-accent { background: var(--accent-500); color: var(--neutral-900); box-shadow: var(--shadow-sm); }
+  .btn-accent:hover:not(:disabled) { background: var(--accent-400); }
+
+  .btn-ghost { background: transparent; color: var(--primary-700); }
+  .btn-ghost:hover:not(:disabled) { background: var(--primary-50); }
+
+  .btn-danger { background: var(--danger-600); color: #ffffff; }
+  .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+
+  .btn[aria-busy="true"] { color: transparent; position: relative; }
+  .btn[aria-busy="true"]::after {
+    content: "";
+    position: absolute;
+    width: 16px; height: 16px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    color: var(--text-on-primary);
+    animation: spin 700ms linear infinite;
+  }
+  .btn-secondary[aria-busy="true"]::after, .btn-ghost[aria-busy="true"]::after { color: var(--primary-600); }
+  .btn-accent[aria-busy="true"]::after { color: var(--neutral-900); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .btn[aria-busy="true"]::after { animation: none; } }
+
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+  .stack { display: flex; flex-direction: column; gap: var(--space-4); }
+  .stack-sm { display: flex; flex-direction: column; gap: var(--space-2); }
+
+  .field { display: flex; flex-direction: column; gap: var(--space-2); }
+  .label { font-size: 14px; font-weight: 600; color: var(--text-strong); display: flex; align-items: center; gap: var(--space-2); }
+  .required { color: var(--danger-600); font-weight: 700; }
+  .optional { font-size: 12px; font-weight: 500; color: var(--text-subtle); }
+  .help { font-size: 13px; line-height: 1.5; color: var(--text-muted); }
+  .error-text { font-size: 13px; line-height: 1.5; color: var(--danger-600); font-weight: 500; display: flex; align-items: center; gap: 6px; }
+  .success-text { font-size: 13px; line-height: 1.5; color: var(--success-600); font-weight: 500; }
+
+  .input, .textarea, .select {
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--text-strong);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    width: 100%;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+  .input::placeholder, .textarea::placeholder { color: var(--text-subtle); }
+  .input:hover:not(:disabled), .textarea:hover:not(:disabled), .select:hover:not(:disabled) { border-color: var(--neutral-400); }
+  .input:focus, .textarea:focus, .select:focus { outline: none; border-color: var(--primary-500); box-shadow: var(--ring); }
+  .input:disabled, .textarea:disabled, .select:disabled { background: var(--bg-subtle); color: var(--text-subtle); cursor: not-allowed; }
+  .input[aria-invalid="true"] { border-color: var(--danger-600); }
+  .input[aria-invalid="true"]:focus, .textarea[aria-invalid="true"]:focus { box-shadow: 0 0 0 3px var(--danger-50); border-color: var(--danger-600); }
+  .textarea { min-height: 96px; resize: vertical; line-height: 1.55; }
+  .select { appearance: none; padding-right: 36px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+
+  .input-affix { position: relative; }
+  .input-affix .input { padding-left: 38px; }
+  .input-affix .affix { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-subtle); pointer-events: none; display: flex; }
+
+  .badge { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: var(--radius-full); border: 1px solid transparent; }
+  .badge-urgent { background: var(--danger-50); color: var(--danger-600); border-color: #fecaca; }
+  .badge-high { background: var(--warning-50); color: var(--warning-600); border-color: var(--accent-200); }
+  .badge-medium { background: var(--info-50); color: var(--info-600); border-color: #bfdbfe; }
+  .badge-low { background: var(--success-50); color: var(--success-600); border-color: #bbf7d0; }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .alert { display: flex; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid; font-size: 14px; line-height: 1.55; }
+  .alert-info { background: var(--info-50); border-color: #bfdbfe; color: #1e40af; }
+  .alert-warn { background: var(--warning-50); border-color: var(--accent-200); color: var(--accent-800); }
+  .alert-title { font-weight: 600; display: block; margin-bottom: 2px; }
+
+  .need-card { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg-surface); padding: var(--space-6); box-shadow: var(--shadow-sm); }
+  .need-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-3); }
+  .need-quote { font-size: 16px; line-height: 1.6; color: var(--text-strong); margin: 0 0 var(--space-4); }
+  .need-meta { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-5); font-size: 13px; color: var(--text-muted); border-top: 1px solid var(--border); padding-top: var(--space-4); margin-top: var(--space-4); }
+  .score { font-family: var(--font-mono); font-weight: 600; color: var(--text-strong); }
+
+  .usage-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .usage-table th, .usage-table td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); vertical-align: top; }
+  .usage-table th { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+  .usage-table tr:last-child td { border-bottom: 0; }
+
+  .footer { margin-top: var(--space-16); border-top: 1px solid var(--border); padding-top: var(--space-6); }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(120%); background: var(--neutral-900); color: #fff; font-size: 13px; font-family: var(--font-mono); padding: 8px 14px; border-radius: var(--radius-full); box-shadow: var(--shadow-lg); transition: transform 180ms ease; z-index: 20; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .wrap { padding: var(--space-8) var(--space-4) var(--space-12); }
+    h1.display, .type-display { font-size: 34px; }
+    .type-h1 { font-size: 28px; }
+    .type-h2 { font-size: 24px; }
+    .card { padding: var(--space-5); }
+    section { margin-top: var(--space-12); }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Design Preview</p>
+    <h1 class="display">FaithBridge AI</h1>
+    <p class="lede">
+      Proposed visual system for the web application: color ramps, type scale, button
+      variants, and form controls. Every value below is a proposal — nothing here is
+      wired into the app yet.
+    </p>
+    <p class="note">
+      The ramps deliberately match Tailwind's default <span class="token">indigo</span>,
+      <span class="token">amber</span>, and <span class="token">slate</span> scales, so
+      adopting them costs nothing beyond extending the theme in
+      <span class="token">apps/web/tailwind.config.ts</span>, which is currently empty.
+      Indigo carries institutional trust, amber carries warmth and generosity. Click any
+      swatch to copy its hex.
+    </p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="color">
+    <div class="section-head">
+      <span class="section-index">01</span>
+      <h2 class="section">Color</h2>
+      <p class="note">Ramp steps run light to dark. <span class="token">600</span> is the interactive default for filled controls; <span class="token">50</span> is the hover and tint background; <span class="token">200</span> is the focus ring.</p>
+    </div>
+
+    <div class="stack" style="gap: var(--space-8);">
+      <div>
+        <div class="ramp-label">
+          <h4>Primary — Indigo</h4>
+          <span class="ramp-role">Actions, links, focus, active nav</span>
+        </div>
+        <div class="ramp">
+          <button class="ramp-cell" style="background:#eef2ff;color:#4338ca"><span class="step">50</span><span class="hex">eef2ff</span></button>
+          <button class="ramp-cell" style="background:#e0e7ff;color:#4338ca"><span class="step">100</span><span class="hex">e0e7ff</span></button>
+          <button class="ramp-cell" style="background:#c7d2fe;color:#3730a3"><span class="step">200</span><span class="hex">c7d2fe</span></button>
+          <button class="ramp-cell" style="background:#a5b4fc;color:#312e81"><span class="step">300</span><span class="hex">a5b4fc</span></button>
+          <button class="ramp-cell" style="background:#818cf8;color:#1e1b4b"><span class="step">400</span><span class="hex">818cf8</span></button>
+          <button class="ramp-cell" style="background:#6366f1;color:#ffffff"><span class="step">500</span><span class="hex">6366f1</span></button>
+          <button class="ramp-cell" style="background:#4f46e5;color:#ffffff"><span class="step">600</span><span class="hex">4f46e5</span></button>
+          <button class="ramp-cell" style="background:#4338ca;color:#ffffff"><span class="step">700</span><span class="hex">4338ca</span></button>
+          <button class="ramp-cell" style="background:#3730a3;color:#ffffff"><span class="step">800</span><span class="hex">3730a3</span></button>
+          <button class="ramp-cell" style="background:#312e81;color:#ffffff"><span class="step">900</span><span class="hex">312e81</span></button>
+          <button class="ramp-cell" style="background:#1e1b4b;color:#ffffff"><span class="step">950</span><span class="hex">1e1b4b</span></button>
+        </div>
+      </div>
+
+      <div>
+        <div class="ramp-label">
+          <h4>Accent — Amber</h4>
+          <span class="ramp-role">Urgency, highlights, donor warmth</span>
+        </div>
+        <div class="ramp">
+          <button class="ramp-cell" style="background:#fffbeb;color:#b45309"><span class="step">50</span><span class="hex">fffbeb</span></button>
+          <button class="ramp-cell" style="background:#fef3c7;color:#b45309"><span class="step">100</span><span class="hex">fef3c7</span></button>
+          <button class="ramp-cell" style="background:#fde68a;color:#92400e"><span class="step">200</span><span class="hex">fde68a</span></button>
+          <button class="ramp-cell" style="background:#fcd34d;color:#78350f"><span class="step">300</span><span class="hex">fcd34d</span></button>
+          <button class="ramp-cell" style="background:#fbbf24;color:#78350f"><span class="step">400</span><span class="hex">fbbf24</span></button>
+          <button class="ramp-cell" style="background:#f59e0b;color:#78350f"><span class="step">500</span><span class="hex">f59e0b</span></button>
+          <button class="ramp-cell" style="background:#d97706;color:#ffffff"><span class="step">600</span><span class="hex">d97706</span></button>
+          <button class="ramp-cell" style="background:#b45309;color:#ffffff"><span class="step">700</span><span class="hex">b45309</span></button>
+          <button class="ramp-cell" style="background:#92400e;color:#ffffff"><span class="step">800</span><span class="hex">92400e</span></button>
+          <button class="ramp-cell" style="background:#78350f;color:#ffffff"><span class="step">900</span><span class="hex">78350f</span></button>
+        </div>
+      </div>
+
+      <div>
+        <div class="ramp-label">
+          <h4>Neutral — Slate</h4>
+          <span class="ramp-role">Surfaces, borders, body text</span>
+        </div>
+        <div class="ramp">
+          <button class="ramp-cell" style="background:#f8fafc;color:#64748b"><span class="step">50</span><span class="hex">f8fafc</span></button>
+          <button class="ramp-cell" style="background:#f1f5f9;color:#64748b"><span class="step">100</span><span class="hex">f1f5f9</span></button>
+          <button class="ramp-cell" style="background:#e2e8f0;color:#475569"><span class="step">200</span><span class="hex">e2e8f0</span></button>
+          <button class="ramp-cell" style="background:#cbd5e1;color:#475569"><span class="step">300</span><span class="hex">cbd5e1</span></button>
+          <button class="ramp-cell" style="background:#94a3b8;color:#334155"><span class="step">400</span><span class="hex">94a3b8</span></button>
+          <button class="ramp-cell" style="background:#64748b;color:#ffffff"><span class="step">500</span><span class="hex">64748b</span></button>
+          <button class="ramp-cell" style="background:#475569;color:#ffffff"><span class="step">600</span><span class="hex">475569</span></button>
+          <button class="ramp-cell" style="background:#334155;color:#ffffff"><span class="step">700</span><span class="hex">334155</span></button>
+          <button class="ramp-cell" style="background:#1e293b;color:#ffffff"><span class="step">800</span><span class="hex">1e293b</span></button>
+          <button class="ramp-cell" style="background:#0f172a;color:#ffffff"><span class="step">900</span><span class="hex">0f172a</span></button>
+          <button class="ramp-cell" style="background:#020617;color:#ffffff"><span class="step">950</span><span class="hex">020617</span></button>
+        </div>
+      </div>
+
+      <div>
+        <div class="ramp-label">
+          <h4>Semantic</h4>
+          <span class="ramp-role">Status and validation only — never decorative</span>
+        </div>
+        <div class="semantics">
+          <div class="semantic">
+            <div class="chip" style="background:#16a34a"></div>
+            <div class="body"><div class="name">Success</div><div class="use mono">#16a34a on #f0fdf4</div></div>
+          </div>
+          <div class="semantic">
+            <div class="chip" style="background:#d97706"></div>
+            <div class="body"><div class="name">Warning</div><div class="use mono">#d97706 on #fffbeb</div></div>
+          </div>
+          <div class="semantic">
+            <div class="chip" style="background:#dc2626"></div>
+            <div class="body"><div class="name">Danger</div><div class="use mono">#dc2626 on #fef2f2</div></div>
+          </div>
+          <div class="semantic">
+            <div class="chip" style="background:#2563eb"></div>
+            <div class="body"><div class="name">Info</div><div class="use mono">#2563eb on #eff6ff</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="typography">
+    <div class="section-head">
+      <span class="section-index">02</span>
+      <h2 class="section">Typography</h2>
+      <p class="note">
+        Two families, both loaded from Google Fonts. <span class="token">Inter</span> carries
+        all interface and body text — it is drawn for small sizes and holds up on
+        low-density displays. <span class="token">Source Serif 4</span> is reserved for
+        display, h1, and h2, giving the brand a warmer, more editorial voice without
+        putting a serif in dense UI. Everything below h3 stays sans so labels and data
+        remain quick to scan. Both are loaded with
+        <span class="token">display=swap</span> and fall back to the system stack, so the
+        page still renders correctly offline.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="specimen">
+        <div class="type-display">Community impact, measured</div>
+        <div class="meta"><span class="token">display / Source Serif 4 / 48px / 700 / 1.10 / -0.01em</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-h1">Prioritize assistance requests</div>
+        <div class="meta"><span class="token">h1 / Source Serif 4 / 36px / 700 / 1.20 / -0.005em</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-h2">Donor matching</div>
+        <div class="meta"><span class="token">h2 / Source Serif 4 / 30px / 700 / 1.25</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-h3">Urgency scoring</div>
+        <div class="meta"><span class="token">h3 / Inter / 24px / 600 / 1.30</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-h4">Reported by Grace Community Church</div>
+        <div class="meta"><span class="token">h4 / Inter / 20px / 600 / 1.40</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-body-lg">Transforming faith-based giving into measurable community impact. This is the introductory size, used for ledes and pull quotes.</div>
+        <div class="meta"><span class="token">body-lg / Inter / 18px / 400 / 1.65</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-body">Body copy is set at 16px with a 1.6 line height, which keeps long descriptions of community needs comfortable to read. The API classifies a request, scores its urgency, and surfaces matching donors so an organization can act on it the same day.</div>
+        <div class="meta"><span class="token">body / Inter / 16px / 400 / 1.60</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-body-sm">Supporting text, field help, and metadata run at 14px. 13px is the floor for this system; anything smaller fails legibility on low-density displays.</div>
+        <div class="meta"><span class="token">body-sm / Inter / 14px / 400 / 1.55</span></div>
+      </div>
+      <div class="specimen">
+        <div class="type-caption">Section label</div>
+        <div class="meta"><span class="token">caption / Inter / 13px / 600 / 0.06em / uppercase</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="buttons">
+    <div class="section-head">
+      <span class="section-index">03</span>
+      <h2 class="section">Buttons</h2>
+      <p class="note">
+        One primary action per view. Minimum height 42px so the hit target clears the
+        44px accessibility guidance at the medium size. Hover and focus states below are
+        live — tab into them.
+      </p>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Variants</h3>
+        <div class="row" style="margin-top: var(--space-5);">
+          <button class="btn btn-primary btn-md">Primary</button>
+          <button class="btn btn-secondary btn-md">Secondary</button>
+          <button class="btn btn-accent btn-md">Accent</button>
+          <button class="btn btn-ghost btn-md">Ghost</button>
+          <button class="btn btn-danger btn-md">Danger</button>
+        </div>
+        <table class="usage-table" style="margin-top: var(--space-6);">
+          <thead><tr><th>Variant</th><th>Use for</th></tr></thead>
+          <tbody>
+            <tr><td><span class="token">primary</span></td><td>The single main action of a view</td></tr>
+            <tr><td><span class="token">secondary</span></td><td>Supporting actions beside the primary</td></tr>
+            <tr><td><span class="token">accent</span></td><td>Donor-facing and giving flows</td></tr>
+            <tr><td><span class="token">ghost</span></td><td>Tertiary actions in toolbars and cards</td></tr>
+            <tr><td><span class="token">danger</span></td><td>Destructive, irreversible actions</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>Sizes</h3>
+        <div class="stack" style="margin-top: var(--space-5);">
+          <div class="row">
+            <button class="btn btn-primary btn-lg">Large — 50px</button>
+            <button class="btn btn-primary btn-md">Medium — 42px</button>
+            <button class="btn btn-primary btn-sm">Small — 34px</button>
+          </div>
+          <p class="meta">Large for marketing and empty states, medium for forms and dialogs, small for dense tables. Small sits below the 44px target, so keep it out of primary flows.</p>
+        </div>
+
+        <h3 style="margin-top: var(--space-8);">States</h3>
+        <div class="row" style="margin-top: var(--space-5);">
+          <button class="btn btn-primary btn-md">Default</button>
+          <button class="btn btn-primary btn-md" aria-busy="true">Classifying</button>
+          <button class="btn btn-primary btn-md" disabled>Disabled</button>
+        </div>
+        <p class="meta" style="margin-top: var(--space-4);">Loading preserves the button's width so the layout does not shift. Disabled controls keep their label rather than blanking out.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="inputs">
+    <div class="section-head">
+      <span class="section-index">04</span>
+      <h2 class="section">Inputs</h2>
+      <p class="note">
+        Labels sit above the control and are never replaced by a placeholder. Errors appear
+        below in text, not color alone, and move focus to the first invalid field on submit.
+      </p>
+    </div>
+
+    <div class="grid grid-2">
+      <div class="card">
+        <h3>Text field</h3>
+        <div class="stack" style="margin-top: var(--space-5);">
+          <div class="field">
+            <label class="label" for="i-org">Organization name <span class="required" aria-hidden="true">*</span></label>
+            <input class="input" id="i-org" type="text" placeholder="Grace Community Church" />
+            <span class="help">Appears on public donor receipts.</span>
+          </div>
+
+          <div class="field">
+            <label class="label" for="i-email">Contact email <span class="optional">optional</span></label>
+            <div class="input-affix">
+              <span class="affix" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+              </span>
+              <input class="input" id="i-email" type="email" placeholder="giving@example.org" />
+            </div>
+            <span class="help">We only use this to send match notifications.</span>
+          </div>
+
+          <div class="field">
+            <label class="label" for="i-cat">Primary category <span class="required" aria-hidden="true">*</span></label>
+            <select class="select" id="i-cat">
+              <option>Housing</option>
+              <option>Food security</option>
+              <option>Healthcare</option>
+              <option>Utilities</option>
+              <option>Education</option>
+            </select>
+            <span class="help">The classifier proposes one of these; you can override it.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Validation states</h3>
+        <div class="stack" style="margin-top: var(--space-5);">
+          <div class="field">
+            <label class="label" for="i-err">Amount requested <span class="required" aria-hidden="true">*</span></label>
+            <input class="input" id="i-err" type="text" value="0" aria-invalid="true" aria-describedby="e-err" />
+            <span class="error-text" id="e-err" role="alert">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+              Enter an amount greater than zero.
+            </span>
+          </div>
+
+          <div class="field">
+            <label class="label" for="i-ok">Reference code <span class="optional">optional</span></label>
+            <input class="input" id="i-ok" type="text" value="FB-2026-0148" />
+            <span class="success-text">Verified against the parish ledger.</span>
+          </div>
+
+          <div class="field">
+            <label class="label" for="i-dis">Steward ID</label>
+            <input class="input" id="i-dis" type="text" value="Assigned at onboarding" disabled />
+            <span class="help">Read-only until an administrator assigns one.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top: var(--space-6);">
+      <h3>Sample — submit a need for classification</h3>
+      <p class="note">The textarea is the product's primary input. It posts to the AI service on port 8200 and returns a category, urgency score, and priority.</p>
+      <form style="margin-top: var(--space-6); max-width: 640px;" onsubmit="return false;">
+        <div class="field">
+          <label class="label" for="i-need">Describe the need <span class="required" aria-hidden="true">*</span></label>
+          <textarea class="textarea" id="i-need" placeholder="I lost my job and cannot afford rent this month."></textarea>
+          <span class="help">Plain language works best. Names and addresses are redacted before scoring.</span>
+        </div>
+        <div class="row" style="margin-top: var(--space-5);">
+          <button class="btn btn-primary btn-md" type="submit">Classify need</button>
+          <button class="btn btn-secondary btn-md" type="reset">Clear</button>
+          <button class="btn btn-ghost btn-md" type="button" disabled>Save draft</button>
+        </div>
+      </form>
+
+      <div class="row" style="margin-top: var(--space-8);">
+        <span class="badge badge-urgent"><span class="dot"></span>Urgent 92</span>
+        <span class="badge badge-high"><span class="dot"></span>High 71</span>
+        <span class="badge badge-medium"><span class="dot"></span>Medium 48</span>
+        <span class="badge badge-low"><span class="dot"></span>Low 15</span>
+      </div>
+
+      <div class="alert alert-warn" style="margin-top: var(--space-5); max-width: 640px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0; margin-top:2px;" aria-hidden="true"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/></svg>
+        <div>
+          <span class="alert-title">Urgency 92 — rent overdue</span>
+          Scored critical. Housing category. 3 matched donors are able to cover the full
+          amount today.
+        </div>
+      </div>
+
+      <div class="need-card" style="margin-top: var(--space-5); max-width: 640px;">
+        <div class="need-top">
+          <h4 style="margin:0;">Rent assistance — Smith family</h4>
+          <span class="badge badge-urgent"><span class="dot"></span>Urgent</span>
+        </div>
+        <p class="need-quote">"I lost my job and cannot afford rent this month."</p>
+        <div class="need-meta">
+          <span>Category <span class="score">Housing</span></span>
+          <span>Urgency <span class="score">0.92</span></span>
+          <span>Matches <span class="score">3</span></span>
+          <span>Submitted <span class="score">2h ago</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tokens">
+    <div class="section-head">
+      <span class="section-index">05</span>
+      <h2 class="section">Porting to Tailwind</h2>
+      <p class="note">To adopt this system, move the custom properties into the empty <span class="token">theme.extend</span> block in <span class="token">apps/web/tailwind.config.ts</span> and replace the three lines of <span class="token">app/globals.css</span> with a Tailwind v4 <span class="token">@theme</span> block. The two webfonts would move to <span class="token">next/font</span>, which self-hosts them at build time and removes the Google Fonts request entirely. Until then this file is documentation, not a dependency.</p>
+    </div>
+
+    <div class="card">
+      <table class="usage-table">
+        <thead><tr><th>Role</th><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Page background</td><td class="mono">--bg-page</td><td class="mono">#f8fafc</td></tr>
+          <tr><td>Card surface</td><td class="mono">--bg-surface</td><td class="mono">#ffffff</td></tr>
+          <tr><td>Subtle fill</td><td class="mono">--bg-subtle</td><td class="mono">#f1f5f9</td></tr>
+          <tr><td>Border</td><td class="mono">--border</td><td class="mono">#e2e8f0</td></tr>
+          <tr><td>Border strong</td><td class="mono">--border-strong</td><td class="mono">#cbd5e1</td></tr>
+          <tr><td>Text strong</td><td class="mono">--text-strong</td><td class="mono">#0f172a</td></tr>
+          <tr><td>Text body</td><td class="mono">--text-body</td><td class="mono">#334155</td></tr>
+          <tr><td>Text muted</td><td class="mono">--text-muted</td><td class="mono">#64748b</td></tr>
+          <tr><td>Action fill</td><td class="mono">--primary-600</td><td class="mono">#4f46e5</td></tr>
+          <tr><td>Action hover</td><td class="mono">--primary-700</td><td class="mono">#4338ca</td></tr>
+          <tr><td>Focus ring</td><td class="mono">--primary-200</td><td class="mono">#c7d2fe</td></tr>
+          <tr><td>Radius</td><td class="mono">--radius-md</td><td class="mono">8px</td></tr>
+          <tr><td>Interface and body face</td><td class="mono">--font-sans</td><td class="mono">Inter, then system fallback</td></tr>
+          <tr><td>Display and heading face</td><td class="mono">--font-display</td><td class="mono">Source Serif 4, then Georgia</td></tr>
+          <tr><td>Numeric face</td><td class="mono">--font-mono</td><td class="mono">System monospace stack</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p class="meta">Proposal only. Fonts load from Google Fonts and fall back to system faces when offline; everything else is self-contained with no build step. Values here are not yet referenced by the Next.js application.</p>
+  </div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  (() => {
+    const toast = document.getElementById('toast');
+    let timer;
+
+    const show = (message) => {
+      toast.textContent = message;
+      toast.classList.add('show');
+      clearTimeout(timer);
+      timer = setTimeout(() => toast.classList.remove('show'), 1400);
+    };
+
+    document.querySelectorAll('.ramp-cell').forEach((cell) => {
+      cell.addEventListener('click', async () => {
+        const hex = cell.querySelector('.hex').textContent;
+        try {
+          await navigator.clipboard.writeText(`#${hex}`);
+          show(`Copied #${hex}`);
+        } catch {
+          show(`#${hex}`);
+        }
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
