@@ -26,7 +26,10 @@ def test_assistance_returns_503_when_ai_unavailable(monkeypatch):
     assert response.status_code == 503
 
 
-def test_dashboard_insights():
-    response = client.get("/api/v1/dashboard/community-insights")
+def test_dashboard_stats_returns_counts():
+    response = client.get("/api/v1/dashboard/stats")
     assert response.status_code == 200
-    assert "families_assisted" in response.json()["totals"]
+    body = response.json()
+    assert "assistance_requests" in body
+    assert "donations" in body
+    assert all(isinstance(v, int) for v in body.values())

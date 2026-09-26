@@ -1,12 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import assistance, auth, dashboard, donations, health
 from app.config import settings
+from app.db import models  # noqa: F401
+from app.db.session import Base, check_connection, engine
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    await engine.dispose()
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title=settings.app_name, version="0.1.0")
+    app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

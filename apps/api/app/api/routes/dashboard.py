@@ -1,22 +1,35 @@
-from fastapi import APIRouter
+from typing import Annotated
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.models import (
+    AssistanceRequest,
+    Beneficiary,
+    Donation,
+    Organization,
+    Placement,
+    Program,
+    User,
+)
+from app.db.session import get_session
 
 router = APIRouter()
 
 
-@router.get("/community-insights")
-async def community_insights() -> dict:
-    return {"totals": {"families_assisted": 0, "meals_provided": 0, "students_supported": 0}}
+@router.get("/stats")
+async def stats(session: Annotated[AsyncSession, Depends(get_session)]) -> dict:
+    async def count(model: type) -> int:
+        result = await session.execute(select(func.count()).select_from(model))
+        return int(result.scalar_one())
 
-
-@router.get("/impact-report")
-async def impact_report() -> dict:
     return {
-        "impact_score": 0,
-        "dimensions": [
-            {"name": "families_supported", "score": 0},
-            {"name": "education_outcomes", "score": 0},
-            {"name": "employment_success", "score": 0},
-            {"name": "food_security", "score": 0},
-            {"name": "healthcare_support", "score": 0},
-        ],
+        "organizations": await count(Organization),
+        "users": await count(User),
+        "programs": await count(Program),
+        "beneficiaries": await count(Beneficiary),
+        "assistance_requests": await count(AssistanceRequest),
+        "donations": await count(Donation),
+        "placements": await count(Placement),
     }

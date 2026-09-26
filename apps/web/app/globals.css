@@ -1,3 +1,41 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --fb-navy: #0f172a;
+    --fb-slate: #334155;
+    --fb-amber: #d97706;
+    --fb-amber-dark: #b45309;
+    --fb-cream: #fffbeb;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-slate-800 antialiased;
+  }
+}
+
+@layer components {
+  .fb-card {
+    @apply rounded-xl border border-slate-200 bg-white p-6 shadow-sm;
+  }
+
+  .fb-btn-primary {
+    @apply inline-flex items-center justify-center rounded-lg bg-amber-600 px-5 py-2.5
+      font-semibold text-white transition hover:bg-amber-700
+      focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2
+      disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .fb-btn-secondary {
+    @apply inline-flex items-center justify-center rounded-lg border border-slate-300
+      bg-white px-5 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50
+      focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2
+      disabled:cursor-not-allowed disabled:opacity-60;
+  }
+}

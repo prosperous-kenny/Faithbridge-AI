@@ -305,15 +305,32 @@ FaithBridge AI is an intelligent social impact platform that empowers faith-base
 
 | Layer          | Technology                                          | Rationale                                        |
 | -------------- | --------------------------------------------------- | ------------------------------------------------ |
-| Frontend       | Next.js 14 (React, TypeScript, Tailwind CSS)        | SSR + fast UX, one deployable for web/mobile-web |
-| Backend API    | Python 3.12 + FastAPI                               | Typed, async, auto-generated OpenAPI docs        |
+| Frontend       | Next.js 16 (React 19, TypeScript, Tailwind CSS)     | SSR + fast UX, one deployable for web/mobile-web |
+| Backend API    | Python 3.12 + FastAPI + SQLAlchemy 2 (asyncpg)       | Typed, async, auto-generated OpenAPI docs        |
 | AI Service     | Python + scikit-learn / sentence-transformers       | Classification + embeddings + matching           |
-| Database       | PostgreSQL 16                                      | Relational integrity for donations/beneficiaries |
+| Database       | PostgreSQL 16 (local dev: installed, username/password auth) | Relational integrity for donations/beneficiaries |
 | Cache/Queues   | Redis (cache), Celery (async jobs)                 | Urgency scoring + notifications                  |
 | Object Storage | S3-compatible storage                               | Uploads (documents, receipts)                    |
 | Auth           | Auth0 or Keycloak (+ JWT)                           | OIDC, role-based access control                  |
-| Infra          | Docker Compose (dev) → ECS/Fly.io (prod)           | Portable to any cloud provider                   |
+| Infra          | Local PostgreSQL 16 (dev) → ECS/Fly.io (prod)       | Portable to any cloud provider                   |
 | Monitoring     | Grafana + Prometheus + Sentry                       | Observability                                    |
+
+**Verified local development baseline (as of the initial wiring milestone)**
+
+| Component      | Version / State                                                |
+| -------------- | -------------------------------------------------------------- |
+| Node.js        | v24.19.0 (LTS), npm 11.17.0                                     |
+| Next.js        | 16.3.6 with React 19.3.0 — 0 known npm vulnerabilities          |
+| PostgreSQL     | 16.15, Windows service `postgresql-x64-16`, localhost:5432     |
+| Database auth  | `scram-sha-256` username/password on localhost                 |
+| Python         | 3.14.7 in `.venv`; 12 tests passing (API + AI services)        |
+| Frontend build | `npm run build` succeeds; dev server returns HTTP 200           |
+
+Note: Next.js 14 was originally specified, but the 14.x line carries unpatched
+advisories (including GHSA-p293-qw3h-jr36, CVSS 9.0). The stack moved to
+Next.js 16 to keep the vulnerability count at zero. `infra/docker-compose.yml`
+is retained for teams that prefer containerized Postgres; local development
+currently uses the natively installed service.
 
 Language/framework versions are baseline recommendations and may be adjusted during implementation spikes.
 
@@ -434,6 +451,11 @@ Decision required from stakeholders before M2. Until then, costs are assumed cov
 - Is English-only acceptable for MVP, or is multilingual (e.g., Swahili, French) required from day one?
 
 ---
+
+# 26. Notes
+- I have chosen the tool node.js because next.js that I am using is a react server framework that needs a node runtime
+- I have chosen Next.js as a framework because it transforms React from a frontend UI library into a full-stack, production-ready framework. While plain React leaves architecture decisions—like routing, data fetching, and build optimizations—up to the developer, Next.js provides these critical features out of the box
+- I have chosen Docker primarily to eliminate the "it works on my machine" problem by bundling an application and all of its dependencies into a single, isolated container. This ensures that the application runs exactly the same way on my laptop, a continuous integration (CI) server, and the production environment or any other person's laptop.
 
 # Appendix A: Glossary
 

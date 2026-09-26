@@ -6,22 +6,61 @@ Estimates assume one full-time engineer. Phases 1–5 total ~12–13 weeks (PRD 
 
 ---
 
-## Current state (start of Phase 0)
+## Current state — Phase 0 in progress
 
 Already built and verified:
 
 | Asset | Status |
 | ----- | ------ |
 | Monorepo layout (`apps/api`, `apps/ai`, `apps/web`, `infra`, `docs`) | Done |
-| FastAPI API with health/auth/assistance/donations/dashboard route stubs | Done |
+| FastAPI API with health/auth/assistance/donations/dashboard routes | Done |
 | Rule-based need classifier + urgency scoring (`apps/ai/faithbridge_ai/classifier.py`) | Done, placeholder quality |
 | AI service endpoints `/health`, `/classify`, `/match` | Done |
-| Test suite (8 tests passing) | Done |
-| Next.js 14 + TypeScript + Tailwind scaffold | Scaffolded only, no Node installed |
-| PostgreSQL + Redis via `infra/docker-compose.yml` | Compose file only, not wired to app |
+| Test suite (12 tests passing) | Done |
+| Next.js 16.3.6 + React 19.3.0 + TypeScript + Tailwind scaffold | Done, `npm run build` green, 0 npm vulnerabilities |
+| Node.js v24.19.0 (LTS) + npm 11.17.0 | Done |
+| PostgreSQL 16.15 installed locally (Windows service, `scram-sha-256` auth) | Done |
+| SQLAlchemy 2.1 async (asyncpg) engine, session factory, 9 tables created | Done, `create_all` on startup |
+| `/health/ready` DB-backed readiness probe | Done |
+| **Working web app: 4 routes rendering real data** | Done — see below |
 | PRD, this plan, public GitHub repo | Done |
 
-Not started: persistence, real authentication, ML models, async workers, dashboards, payments.
+### Working application (this milestone)
+
+The app is running locally and serving live data end to end. This is a real
+application, distinct from the static `design.html` preview in the repo root.
+
+| Route | What it does |
+| ----- | ------------ |
+| `/` | Landing page — product positioning, the three pillars, the three user roles |
+| `/dashboard` | Live row counts for all 7 entities, read from PostgreSQL through the API |
+| `/status` | Real health probe of the API, the AI service, and database connectivity |
+| `/request` | Interactive form; classifies a need via web → Next route handler → FastAPI → AI service |
+
+**Verified request path.** Posting "Family of four facing eviction in two weeks
+and needs rent help" through the running app returns:
+
+```json
+{ "id": "req-0001", "category": "housing", "urgency_score": 65, "priority": "high", "status": "submitted" }
+```
+
+**Local run commands**
+
+```bash
+# Terminal 1 — AI service
+.\.venv\Scripts\python.exe -m uvicorn faithbridge_ai.main:app --port 8200   # cwd: apps/ai
+
+# Terminal 2 — API
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000               # cwd: apps/api
+
+# Terminal 3 — web
+npm.cmd run dev                                                             # cwd: apps/web
+```
+
+Open http://localhost:3000. Note `npm` must be called as `npm.cmd` in
+PowerShell; the execution policy blocks `npm.ps1`.
+
+Not started: Alembic migrations, real authentication/RLBAC, ML models, async workers, payments, CI workflow.
 
 ---
 
@@ -31,12 +70,15 @@ Not started: persistence, real authentication, ML models, async workers, dashboa
 
 **Tasks**
 
-1. Install Node.js (LTS) so `apps/web` builds in CI; get `npm run build` green on the existing scaffold.
-2. Stand up local infra (`docker compose -f infra/docker-compose.yml up -d`) and verify connectivity from the API.
-3. Add SQLAlchemy 2.0 (async) + Alembic; create migrations for all nine entities in PRD §20.
+1. ~~Install Node.js (LTS) so `apps/web` builds in CI; get `npm run build` green on the existing scaffold.~~ **Done** — Node v24.19.0, Next.js upgraded 14.2.5 → 16.3.6 to clear GHSA-p293-qw3h-jr36; `npm run build` green, 0 vulnerabilities.
+2. ~~Stand up local infra and verify connectivity from the API.~~ **Done** — PostgreSQL 16.15 installed natively (no Docker on this machine); `scram-sha-256` username/password auth; `/health/ready` reports `database: up`.
+3. Add SQLAlchemy 2.0 (async) + Alembic; create migrations for all nine entities in PRD §20. **Partially done** — async engine, session factory, and all nine tables are in place via `create_all`; Alembic migration history still to be introduced so schema changes become reviewable.
 4. Replace the rule-based classifier with a real baseline: TF-IDF + linear model, then evaluate against an embedding model (sentence-transformers) and pick the winner.
 5. Build the evaluation harness *before* tuning, so accuracy claims are measurable.
 6. Add CI (GitHub Actions): ruff lint, pytest, `next build`, migration smoke test.
+7. **Done (added in this milestone)** — build the working web app so the stack is
+   demonstrable end to end: app shell, four routes, server-side API client, and a
+   Next route handler proxying to FastAPI. Verified live against PostgreSQL.
 
 **Concrete outputs**
 
@@ -252,7 +294,10 @@ Per PRD §14: voice assistant, fraud detection, volunteer matching, mobile appli
 | Beneficiary PII leaking to donor surfaces | Severe trust and legal damage | RBAC negative tests from Phase 1, plus an explicit PII-absence test on every donor-facing response in Phases 3 and 5 |
 | Payment/escrow model undecided (PRD §25) | Blocks Phase 6 | Interface-first design; provider chosen only after the decision |
 | Single-engineer bandwidth | Schedule slip | Phases are ordered by dependency, not by feature appeal; cut scope to the M1 gate before cutting gates |
-| Node/web build unverified on this machine | Blocks web phases | Install Node LTS first thing in Phase 0 |
+| Node/web build unverified on this machine | Blocks web phases | **Resolved** — Node v24.19.0 installed, `npm run build` green, 0 vulnerabilities |
+| Unpatched Next.js advisories (e.g. GHSA-p293-qw3h-jr36, CVSS 9.0) | Remote code execution on a Windows-hosted deployment | **Resolved** — moved to Next.js 16.3.6 / React 19.3.0; treat the Next major version as security-tracked and re-check advisories on every bump |
+| Weak local database credentials | Unauthorized access to beneficiary PII and donation data | Local-only `scram-sha-256` on localhost with a least-privilege app role (no superuser); rotate the local passwords before any shared or hosted deployment |
+| Schema managed by `create_all` only | Drifts silently; no reviewable migration history | Introduce Alembic in Phase 0 and migrate before the first data-bearing deploy |
 
 ---
 
