@@ -14,6 +14,12 @@
 [build]
   base = "apps/web"
   command = "npm run build"
+  # The Netlify UI has this pinned to "apps/web", which equals the base
+  # directory and makes the OpenNext adapter abort with
+  # "publish directory cannot be the same as the base directory".
+  # The UI field cannot be cleared, so override it here: netlify.toml takes
+  # precedence over UI build settings.
+  publish = ".next"
 
 [build.environment]
   NODE_VERSION = "24"
