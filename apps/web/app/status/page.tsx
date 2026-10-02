@@ -1,4 +1,4 @@
-import { getSystemStatus } from "@/lib/api";
+import { getSystemStatus, IS_BACKEND_CONFIGURED } from "@/lib/api";
 import ServiceCard from "@/components/ServiceCard";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +11,22 @@ export default async function StatusPage() {
     <div className="mx-auto max-w-4xl px-6 py-16">
       <h1 className="text-3xl font-bold text-slate-900">System Status</h1>
       <p className="mt-2 text-slate-600">
-        Live health checks against the local development stack.
+        Live health checks against the platform services.
       </p>
+
+      {!IS_BACKEND_CONFIGURED && (
+        <div className="mt-6 rounded-lg border border-slate-300 bg-slate-100 px-5 py-4">
+          <p className="font-semibold text-slate-900">
+            Frontend-only deployment
+          </p>
+          <p className="mt-1 text-sm text-slate-700">
+            No <code className="font-mono">API_URL</code> is configured on this
+            deployment, so the API and database below are unreachable by
+            design. The FastAPI services run separately and are not hosted on
+            Netlify.
+          </p>
+        </div>
+      )}
 
       <div
         className={`mt-6 rounded-lg border px-5 py-4 ${

@@ -1,0 +1,36 @@
+# FaithBridge AI — Netlify configuration
+#
+# SCOPE: this deploys the Next.js frontend only (apps/web).
+# The Python services (apps/api, apps/ai) and PostgreSQL are NOT deployed here,
+# because Netlify functions cannot host long-running FastAPI servers or a
+# Postgres instance. Until the API is hosted elsewhere, the /dashboard and
+# /status pages will report the backend as unavailable. That is expected.
+
+[build]
+  base = "apps/web"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Server-side only. Points the frontend at wherever the FastAPI API is hosted.
+# Leave unset on Netlify so it falls back to localhost:8000 and reports offline.
+# [build.environment]
+#   API_URL = "https://your-api-host.example.com"
+
+[dev]
+  command = "npm run dev"
+  targetPort = 3000
+  port = 8888
+  framework = "next"
+  autoLaunch = false
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

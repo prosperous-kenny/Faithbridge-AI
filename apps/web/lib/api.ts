@@ -5,6 +5,13 @@ const AI_URL = process.env.AI_SERVICE_URL ?? "http://localhost:8200";
 
 const TIMEOUT_MS = 4000;
 
+/**
+ * True when no API host is configured, which is the case on a frontend-only
+ * deployment such as Netlify. Lets the UI explain the gap instead of
+ * implying a real outage.
+ */
+export const IS_BACKEND_CONFIGURED = Boolean(process.env.API_URL);
+
 async function probe(
   name: string,
   url: string,

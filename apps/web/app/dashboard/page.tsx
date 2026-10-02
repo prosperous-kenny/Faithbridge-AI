@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSystemStatus } from "@/lib/api";
+import { getSystemStatus, IS_BACKEND_CONFIGURED } from "@/lib/api";
 import ServiceCard from "@/components/ServiceCard";
 
 export const dynamic = "force-dynamic";
@@ -45,11 +45,14 @@ export default async function DashboardPage() {
       ) : (
         <div className="fb-card mt-10 border-amber-200 bg-amber-50">
           <p className="font-semibold text-slate-900">
-            Dashboard data unavailable
+            {IS_BACKEND_CONFIGURED
+              ? "Dashboard data unavailable"
+              : "No API connected on this deployment"}
           </p>
           <p className="mt-1 text-sm text-slate-600">
-            The API did not return statistics. Confirm the API and PostgreSQL
-            are running, then reload.
+            {IS_BACKEND_CONFIGURED
+              ? "The API did not return statistics. Confirm the API and PostgreSQL are running, then reload."
+              : "This deployment hosts the frontend only. FaithBridge AI's FastAPI services and PostgreSQL database run separately, so live platform data is unavailable here. Counts appear once an API_URL is configured."}
           </p>
         </div>
       )}
