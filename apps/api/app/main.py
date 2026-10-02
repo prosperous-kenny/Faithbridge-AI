@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import assistance, auth, dashboard, donations, health
+from app.api.routes import assistance, auth, dashboard, donations, health, notifications
 from app.config import settings
 from app.db import models  # noqa: F401
 from app.db.session import Base, check_connection, engine
@@ -32,6 +32,9 @@ def create_app() -> FastAPI:
     app.include_router(assistance.router, prefix=f"{prefix}/assistance", tags=["assistance"])
     app.include_router(donations.router, prefix=f"{prefix}/donations", tags=["donations"])
     app.include_router(dashboard.router, prefix=f"{prefix}/dashboard", tags=["dashboard"])
+    app.include_router(
+        notifications.router, prefix=f"{prefix}/notifications", tags=["notifications"]
+    )
     return app
 
 
