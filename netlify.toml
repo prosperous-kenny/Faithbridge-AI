@@ -21,6 +21,13 @@
   # precedence over UI build settings.
   publish = ".next"
 
+# REQUIRED: provisions the serverless functions for the server-rendered routes
+# (/dashboard, /status, /api/assistance). Without it the build succeeds but
+# deploys 0 functions and every route 404s. Next.js is not auto-detected here
+# because explicit build settings in a monorepo bypass framework detection.
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [build.environment]
   NODE_VERSION = "24"
 
