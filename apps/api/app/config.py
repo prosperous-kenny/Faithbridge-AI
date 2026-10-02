@@ -14,6 +14,9 @@ class Settings:
     ai_service_url: str = os.getenv("AI_SERVICE_URL", "http://localhost:8200")
     database_url: str = os.getenv("DATABASE_URL", "")
     db_echo: bool = os.getenv("DB_ECHO", "false").lower() == "true"
+    # Escape hatch for local dev only: create tables with create_all instead of
+    # requiring `alembic upgrade head`. Never enable in a deployed environment.
+    auto_create_schema: bool = os.getenv("AUTO_CREATE_SCHEMA", "false").lower() == "true"
     resend_api_key: str = os.getenv("RESEND_API_KEY", "")
     email_from: str = os.getenv(
         "EMAIL_FROM", "FaithBridge AI <notifications@example.com>"

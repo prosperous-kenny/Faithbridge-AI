@@ -33,10 +33,13 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 async def check_connection() -> bool:
     from sqlalchemy import text
+    from sqlalchemy.exc import SQLAlchemyError
 
     try:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         return True
-    except Exception:
+    except SQLAlchemyError:
+        # Readiness is a probe, not a hard dependency: an unreachable database
+        # must surface as "not ready", never as an unhandled exception.
         return False

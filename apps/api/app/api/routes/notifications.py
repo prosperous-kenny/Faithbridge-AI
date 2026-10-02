@@ -1,6 +1,5 @@
-from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel, EmailStr, Field
 
 from app.services.email import send_email

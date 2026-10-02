@@ -44,17 +44,43 @@ async def match_donors(payload: MatchRequest) -> MatchResponse:
 
 def _rank(causes: list[str], budget: float) -> list[dict]:
     pool = [
-        {"program_id": "prog-1", "program_name": "Food Bank", "causes": ("food", "hunger")},
-        {"program_id": "prog-2", "program_name": "School Fees Fund", "causes": ("education", "school")},
-        {"program_id": "prog-3", "program_name": "Medical Assistance", "causes": ("medical", "health")},
-        {"program_id": "prog-4", "program_name": "Emergency Relief", "causes": ("emergency", "disaster")},
-        {"program_id": "prog-5", "program_name": "Employment Support", "causes": ("employment", "job")},
+        {
+            "program_id": "prog-1",
+            "program_name": "Food Bank",
+            "causes": ("food", "hunger"),
+        },
+        {
+            "program_id": "prog-2",
+            "program_name": "School Fees Fund",
+            "causes": ("education", "school"),
+        },
+        {
+            "program_id": "prog-3",
+            "program_name": "Medical Assistance",
+            "causes": ("medical", "health"),
+        },
+        {
+            "program_id": "prog-4",
+            "program_name": "Emergency Relief",
+            "causes": ("emergency", "disaster"),
+        },
+        {
+            "program_id": "prog-5",
+            "program_name": "Employment Support",
+            "causes": ("employment", "job"),
+        },
     ]
     normalized = [c.lower() for c in causes]
     scored = []
     for program in pool:
         overlap = len(set(program["causes"]) & set(normalized))
         score = 0.5 if overlap else 0.1
-        scored.append({"program_id": program["program_id"], "program_name": program["program_name"], "match_score": score})
+        scored.append(
+            {
+                "program_id": program["program_id"],
+                "program_name": program["program_name"],
+                "match_score": score,
+            }
+        )
     scored.sort(key=lambda item: item["match_score"], reverse=True)
     return scored

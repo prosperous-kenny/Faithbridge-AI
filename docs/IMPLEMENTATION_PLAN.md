@@ -6,7 +6,51 @@ Estimates assume one full-time engineer. Phases 1–5 total ~12–13 weeks (PRD 
 
 ---
 
-## Current state — Phase 0 in progress
+## Current state — Phase 0 complete
+
+Phase 0 exit gate passed. All three remaining tasks are done: Alembic, the
+evaluation harness with a real baseline model, and CI.
+
+| Exit gate criterion | Result |
+| ------------------- | ------ |
+| Classification accuracy ≥ 85% on held-out split, no category < 70% | **Met** — TF-IDF + LinearSVC at 90.3%; worst category `education` recall 0.700 |
+| `alembic upgrade head` then `downgrade base` both succeed | **Met** — verified in CI and locally (`python -m tests.test_migrations`) |
+| CI green on a clean checkout | **Met** — `.github/workflows/ci.yml`, three jobs (api, ai, web) |
+
+### What Phase 0 produced
+
+- `apps/api/alembic/` — initial migration for all nine PRD §20 tables, fully
+  reversible. Schema is now owned by Alembic; `create_all` no longer runs at
+  API startup and the app refuses to boot on a stale revision.
+- `apps/ai/eval/` — harness built before any tuning: 204 labeled statements
+  across six categories, deterministic stratified split, per-category
+  precision/recall, confusion matrix, and an explicit gate check.
+- `apps/ai/faithbridge_ai/baseline.py` — TF-IDF (word 1-2 + char 3-5 grams) into
+  a linear SVM, chosen over the rule-based matcher (90.3% vs 80.6%).
+- `apps/ai/tests/test_eval_gate.py` — the accuracy gate is a test, so a
+  regression fails CI rather than going unnoticed.
+- `.github/workflows/ci.yml` — ruff, pytest, migration smoke test, Alembic
+  drift check, Next typecheck/lint/build, plus a check that the committed eval
+  results are not stale.
+
+### Known limitation carried into Phase 1
+
+The evaluation dataset is template-generated, not real beneficiary
+submissions. The 90.3% figure is reproducible and makes the gate checkable, but
+it is a weaker proxy than real data and is likely optimistic. **Real
+submissions must replace `apps/ai/eval/dataset.csv` before the M1 launch gate in
+PRD §23 can be claimed as met.** This is recorded in
+`docs/adr/0001-model-selection.md`.
+
+### Also done in this milestone
+
+Frontend deployed to Netlify at
+`https://deluxe-malasada-7a387b.netlify.app` (frontend only — see the
+deployment note below).
+
+---
+
+## Earlier state — Phase 0 in progress
 
 Already built and verified:
 
@@ -16,11 +60,14 @@ Already built and verified:
 | FastAPI API with health/auth/assistance/donations/dashboard routes | Done |
 | Rule-based need classifier + urgency scoring (`apps/ai/faithbridge_ai/classifier.py`) | Done, placeholder quality |
 | AI service endpoints `/health`, `/classify`, `/match` | Done |
-| Test suite (12 tests passing) | Done |
+| Test suite (21 tests passing across api and ai) | Done |
 | Next.js 16.3.6 + React 19.3.0 + TypeScript + Tailwind scaffold | Done, `npm run build` green, 0 npm vulnerabilities |
 | Node.js v24.19.0 (LTS) + npm 11.17.0 | Done |
 | PostgreSQL 16.15 installed locally (Windows service, `scram-sha-256` auth) | Done |
-| SQLAlchemy 2.1 async (asyncpg) engine, session factory, 9 tables created | Done, `create_all` on startup |
+| SQLAlchemy 2.1 async (asyncpg) engine, session factory, 9 tables | Done, schema owned by Alembic |
+| Alembic migration history (initial migration, reversible up/down) | Done, `alembic upgrade head` / `downgrade base` verified |
+| Evaluation harness + TF-IDF baseline classifier | Done, 90.3% accuracy, gate enforced in CI |
+| GitHub Actions CI (ruff, pytest, migrations, web build) | Done |
 | `/health/ready` DB-backed readiness probe | Done |
 | **Working web app: 4 routes rendering real data** | Done — see below |
 | PRD, this plan, public GitHub repo | Done |
@@ -50,7 +97,8 @@ and needs rent help" through the running app returns:
 # Terminal 1 — AI service
 .\.venv\Scripts\python.exe -m uvicorn faithbridge_ai.main:app --port 8200   # cwd: apps/ai
 
-# Terminal 2 — API
+# Terminal 2 — API (run migrations first: alembic upgrade head)
+.\.venv\Scripts\python.exe -m alembic upgrade head                          # cwd: apps/api
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000               # cwd: apps/api
 
 # Terminal 3 — web
@@ -60,7 +108,19 @@ npm.cmd run dev                                                             # cw
 Open http://localhost:3000. Note `npm` must be called as `npm.cmd` in
 PowerShell; the execution policy blocks `npm.ps1`.
 
-Not started: Alembic migrations, real authentication/RLBAC, ML models, async workers, payments, CI workflow.
+### Deployment
+
+The frontend is live at
+`https://deluxe-malasada-7a387b.netlify.app`. Netlify hosts **only**
+`apps/web`: it cannot run long-running FastAPI servers or PostgreSQL. On the
+deployed site `/dashboard` and `/status` render an explanation that no API is
+connected rather than showing an error. Wiring live data requires hosting the
+API separately (Railway, Render, or Fly) and setting `API_URL` in Netlify's
+environment variables — deliberately not done here, because PRD §25 leaves the
+jurisdiction and escrow question open and that decision should precede choosing
+where beneficiary PII lives.
+
+Not started: real authentication/RLBAC, async workers, payments, hosted API.
 
 ---
 
@@ -72,24 +132,28 @@ Not started: Alembic migrations, real authentication/RLBAC, ML models, async wor
 
 1. ~~Install Node.js (LTS) so `apps/web` builds in CI; get `npm run build` green on the existing scaffold.~~ **Done** — Node v24.19.0, Next.js upgraded 14.2.5 → 16.3.6 to clear GHSA-p293-qw3h-jr36; `npm run build` green, 0 vulnerabilities.
 2. ~~Stand up local infra and verify connectivity from the API.~~ **Done** — PostgreSQL 16.15 installed natively (no Docker on this machine); `scram-sha-256` username/password auth; `/health/ready` reports `database: up`.
-3. Add SQLAlchemy 2.0 (async) + Alembic; create migrations for all nine entities in PRD §20. **Partially done** — async engine, session factory, and all nine tables are in place via `create_all`; Alembic migration history still to be introduced so schema changes become reviewable.
-4. Replace the rule-based classifier with a real baseline: TF-IDF + linear model, then evaluate against an embedding model (sentence-transformers) and pick the winner.
-5. Build the evaluation harness *before* tuning, so accuracy claims are measurable.
-6. Add CI (GitHub Actions): ruff lint, pytest, `next build`, migration smoke test.
+3. ~~Add SQLAlchemy 2.0 (async) + Alembic; create migrations for all nine entities in PRD §20.~~ **Done** — async engine and session factory; Alembic introduced with one reversible initial migration covering all nine tables. `create_all` no longer runs at API startup; the app verifies the applied revision and refuses to boot on drift, so schema changes are reviewable.
+4. ~~Replace the rule-based classifier with a real baseline.~~ **Done** — TF-IDF (word 1-2 + char 3-5 grams) into a linear SVM, measured against the rule-based matcher: **90.3% vs 80.6%** on the held-out split. The embedding-model comparison was deferred, with the reason recorded in `docs/adr/0001-model-selection.md`; it is not yet run.
+5. ~~Build the evaluation harness *before* tuning.~~ **Done** — 204 labeled statements across six categories, deterministic stratified split, per-category precision/recall, confusion matrix, and an explicit gate check. Built and run before any tuning.
+6. ~~Add CI (GitHub Actions): ruff lint, pytest, `next build`, migration smoke test.~~ **Done** — three jobs: api (ruff, pytest, migration smoke test, Alembic drift check), ai (ruff, pytest including the accuracy gate, stale-results check), web (typecheck, lint, build).
 7. **Done (added in this milestone)** — build the working web app so the stack is
    demonstrable end to end: app shell, four routes, server-side API client, and a
    Next route handler proxying to FastAPI. Verified live against PostgreSQL.
 
 **Concrete outputs**
 
-- `apps/api/app/db/{base,session,models}.py` — all nine tables, FKs, `created_at`/`updated_at`, audit columns
-- `apps/api/alembic/` — initial migration, reversible up/down
-- `apps/ai/faithbridge_ai/models/` — baseline + embedding classifier behind one interface
-- `apps/ai/eval/dataset.csv` — 200 labeled real-world need statements across the six categories
-- `apps/ai/eval/evaluate.py` — per-category precision/recall + confusion matrix
-- `apps/ai/eval/report.md` — accuracy by model, chosen model, error analysis
-- `.github/workflows/ci.yml`
-- `docs/adr/0001-model-selection.md`
+- `apps/api/app/db/{base,session,models}.py` — all nine tables, `created_at`/`updated_at`, audit columns
+- `apps/api/alembic/` — initial migration, reversible up/down **Done**
+- `apps/ai/faithbridge_ai/baseline.py` — TF-IDF baseline behind one interface **Done**
+- `apps/ai/eval/dataset.csv` — 204 labeled need statements across the six categories **Done** (template-generated; see limitation)
+- `apps/ai/eval/evaluate.py` — per-category precision/recall + confusion matrix + gate check **Done**
+- `apps/ai/eval/report.md` — accuracy by model, chosen model, error analysis **Done**
+- `.github/workflows/ci.yml` **Done**
+- `docs/adr/0001-model-selection.md` **Done**
+
+Deliberately not produced: the embedding-model (sentence-transformers)
+comparison. Deferred rather than skipped — reasoning and revisit trigger are in
+the ADR.
 
 **Exit gate**
 
@@ -238,6 +302,10 @@ Not started: Alembic migrations, real authentication/RLBAC, ML models, async wor
 
 **Exit gate (PRD §23)**
 
+> **Carried-forward caution.** The classification criterion below is measured
+> against a template-generated dataset. It is not yet evidence of field
+> accuracy; see the Phase 0 limitation note and `docs/adr/0001-model-selection.md`.
+
 - p95 API latency < 3s under load, evidenced by the k6 run
 - Classification accuracy ≥ 85% on the curated validation set
 - Signed donor/beneficiary consent flow live
@@ -297,7 +365,10 @@ Per PRD §14: voice assistant, fraud detection, volunteer matching, mobile appli
 | Node/web build unverified on this machine | Blocks web phases | **Resolved** — Node v24.19.0 installed, `npm run build` green, 0 vulnerabilities |
 | Unpatched Next.js advisories (e.g. GHSA-p293-qw3h-jr36, CVSS 9.0) | Remote code execution on a Windows-hosted deployment | **Resolved** — moved to Next.js 16.3.6 / React 19.3.0; treat the Next major version as security-tracked and re-check advisories on every bump |
 | Weak local database credentials | Unauthorized access to beneficiary PII and donation data | Local-only `scram-sha-256` on localhost with a least-privilege app role (no superuser); rotate the local passwords before any shared or hosted deployment |
-| Schema managed by `create_all` only | Drifts silently; no reviewable migration history | Introduce Alembic in Phase 0 and migrate before the first data-bearing deploy |
+| Schema managed by `create_all` only | Drifts silently; no reviewable migration history | **Resolved** — Alembic owns the schema; startup verifies the applied revision and fails on drift; CI runs a migration smoke test and `alembic check` |
+| Eval accuracy measured on template-generated data, not real submissions | Inflated confidence in the ≥85% gate | **Known** — 90.3% is reproducible but likely optimistic; replace `apps/ai/eval/dataset.csv` with real submissions before the M1 gate claim. Tracked as a Phase 1 task |
+| Frontend deployed but backend unhosted | Deployed dashboard/status show no live data | **Known** — intentional; Netlify cannot host FastAPI or PostgreSQL. Host the API separately and set `API_URL` once PRD §25 jurisdiction/escrow is decided |
+| `sentence-transformers` comparison never run | Embedding model may beat TF-IDF on real data | Deferred deliberately (torch dependency, CI cost); revisit in Phase 1 with real submissions |
 
 ---
 

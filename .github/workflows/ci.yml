@@ -1,0 +1,139 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "24"
+
+jobs:
+  api:
+    name: API (lint, tests, migrations)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/faithbridge_ci
+      FAITHBRIDGE_ENV: test
+      RESEND_API_KEY: ""
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: faithbridge_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: apps/api/pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Pytest
+        run: pytest -q
+
+      - name: Migration smoke test (upgrade head, downgrade base)
+        run: python -m tests.test_migrations
+
+      - name: Alembic autogenerate drift check
+        run: alembic check
+
+  ai:
+    name: AI (lint, tests, accuracy gate)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: apps/ai/pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,ml]"
+
+      - name: Ruff lint
+        run: ruff check .
+
+      - name: Pytest (includes the >=85% accuracy gate)
+        run: pytest -q
+
+      - name: Run the evaluation harness (rewrites eval/results.txt)
+        run: python eval/evaluate.py
+
+      - name: Confirm committed dataset is unchanged by regeneration
+        run: |
+          python eval/build_dataset.py
+          git diff --exit-code -- eval/dataset.csv \
+            || { echo "eval/dataset.csv is stale; regenerate and commit it"; exit 1; }
+
+      - name: Confirm committed results match a fresh run
+        run: |
+          # evaluate.py rewrites eval/results.txt in place, so a clean tree
+          # after the run proves the committed copy was already up to date.
+          git diff --exit-code -- eval/results.txt \
+            || { echo "eval/results.txt is stale; regenerate and commit it"; exit 1; }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-results
+          path: apps/ai/eval/results.txt
+
+  web:
+    name: Web (typecheck, lint, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build

@@ -1,0 +1,55 @@
+=== TF-IDF + LinearSVC ===
+train 142 / test 62
+overall accuracy: 0.903
+
+per-category (support / precision / recall / f1):
+  food         support= 11  precision=1.000  recall=0.909  f1=0.952
+  housing      support= 11  precision=1.000  recall=0.909  f1=0.952
+  medical      support= 10  precision=0.818  recall=0.900  f1=0.857
+  education    support= 10  precision=0.875  recall=0.700  f1=0.778
+  employment   support= 10  precision=0.833  recall=1.000  f1=0.909
+  emergency    support= 10  precision=0.909  recall=1.000  f1=0.952
+
+confusion matrix (rows = true, cols = predicted):
+                  food housin medica educat employ emerge
+  food             10      0      0      0      1      0
+  housing           0     10      0      0      0      1
+  medical           0      0      9      1      0      0
+  education         0      0      2      7      1      0
+  employment        0      0      0      0     10      0
+  emergency         0      0      0      0      0     10
+
+=== Rule-based keywords (current) ===
+train 142 / test 62
+overall accuracy: 0.806
+
+per-category (support / precision / recall / f1):
+  food         support= 11  precision=1.000  recall=1.000  f1=1.000
+  housing      support= 11  precision=1.000  recall=0.727  f1=0.842
+  medical      support= 10  precision=1.000  recall=0.400  f1=0.571
+  education    support= 10  precision=0.875  recall=0.700  f1=0.778
+  employment   support= 10  precision=0.769  recall=1.000  f1=0.870
+  emergency    support= 10  precision=0.556  recall=1.000  f1=0.714
+
+confusion matrix (rows = true, cols = predicted):
+                  food housin medica educat employ emerge
+  food             11      0      0      0      0      0
+  housing           0      8      0      0      2      1
+  medical           0      0      4      1      0      5
+  education         0      0      0      7      1      2
+  employment        0      0      0      0     10      0
+  emergency         0      0      0      0      0     10
+
+Phase 0 gate (TF-IDF + LinearSVC): PASS
+Phase 0 gate (Rule-based keywords (current)): FAIL
+  - overall accuracy 0.806 < 0.85
+  - medical recall 0.400 < 0.70
+  - emergency precision 0.556 < 0.70
+
+sample misclassifications (TF-IDF + LinearSVC):
+  [education -> employment] A young person needs help completing secondary education
+  [medical -> education] I need help with the cost of seeing a specialist privately
+  [education -> medical] My child needs extra tutoring and we cannot afford it
+  [food -> employment] I lost my job and cannot feed my family of 5, we need food support
+  [housing -> emergency] We need help staying in our home while we look for work
+  [education -> medical] A student needs help with coursework costs and materials

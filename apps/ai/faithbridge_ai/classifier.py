@@ -10,10 +10,48 @@ class Rule:
 RULES = [
     Rule("food", ("food", "hunger", "grocer", "meal", "eat", "starving", "bread")),
     Rule("education", ("school", "fees", "tuition", "books", "uniform", "class")),
-    Rule("medical", ("medical", "hospital", "clinic", "medicine", "treatment", "sick", "doctor", "health")),
-    Rule("employment", ("job", "work", "employment", "hiring", "cv", "interview", "salary")),
-    Rule("housing", ("rent", "housing", "house", "eviction", "shelter", "accommodation", "morgage")),
-    Rule("emergency", ("urgent", "emergency", "immediately", "asap", "disaster", "fire", "flood", "critical")),
+    Rule(
+        "medical",
+        (
+            "medical",
+            "hospital",
+            "clinic",
+            "medicine",
+            "treatment",
+            "sick",
+            "doctor",
+            "health",
+        ),
+    ),
+    Rule(
+        "employment",
+        ("job", "work", "employment", "hiring", "cv", "interview", "salary"),
+    ),
+    Rule(
+        "housing",
+        (
+            "rent",
+            "housing",
+            "house",
+            "eviction",
+            "shelter",
+            "accommodation",
+            "morgage",
+        ),
+    ),
+    Rule(
+        "emergency",
+        (
+            "urgent",
+            "emergency",
+            "immediately",
+            "asap",
+            "disaster",
+            "fire",
+            "flood",
+            "critical",
+        ),
+    ),
 ]
 
 PRIORITY_RULES = [
