@@ -5,6 +5,11 @@
 # because Netlify functions cannot host long-running FastAPI servers or a
 # Postgres instance. Until the API is hosted elsewhere, the /dashboard and
 # /status pages will report the backend as unavailable. That is expected.
+#
+# NOTE: no `publish` directory is set on purpose. Netlify's OpenNext adapter
+# provisions the serverless functions itself for Next.js, so an explicit
+# publish path conflicts with the build. If a publish directory is set in the
+# Netlify UI it overrides this and must be cleared.
 
 [build]
   base = "apps/web"
@@ -13,13 +18,10 @@
 [build.environment]
   NODE_VERSION = "24"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
 # Server-side only. Points the frontend at wherever the FastAPI API is hosted.
-# Leave unset on Netlify so it falls back to localhost:8000 and reports offline.
-# [build.environment]
-#   API_URL = "https://your-api-host.example.com"
+# Leave unset so it falls back to localhost:8000 and the status page explains
+# that no backend is connected, rather than appearing broken.
+# API_URL = "https://your-api-host.example.com"
 
 [dev]
   command = "npm run dev"
