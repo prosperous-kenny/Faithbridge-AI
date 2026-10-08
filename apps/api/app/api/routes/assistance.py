@@ -21,6 +21,7 @@ from app.schemas.assistance import (
     Priority,
     StatusUpdateIn,
 )
+from app.services import fraud as fraud_service
 from app.services import impact as impact_service
 from app.services.ai_client import ai_service_available, classify_need
 from app.services.assistance import LifecycleError, assert_transition
@@ -119,6 +120,16 @@ async def create_request(
         entity_id=str(request.id),
         organization_id=request.organization_id,
         actor_id=user.id,
+    )
+    # Flag-only screening (Phase 7): the request always reaches the queue;
+    # anything suspicious is recorded for human review, never blocked.
+    await fraud_service.screen_submission(
+        session,
+        organization_id=request.organization_id,
+        beneficiary_id=request.beneficiary_id,
+        description=request.description,
+        actor_id=user.id,
+        request_id=request.id,
     )
     await session.commit()
 

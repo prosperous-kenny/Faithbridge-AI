@@ -1,11 +1,21 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "FaithBridge AI",
   description:
     "Transforming faith-based giving into measurable community impact.",
+  appleWebApp: {
+    capable: true,
+    title: "FaithBridge",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#d97706",
 };
 
 const NAV = [
@@ -58,6 +68,7 @@ export default function RootLayout({
             </p>
           </div>
         </footer>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

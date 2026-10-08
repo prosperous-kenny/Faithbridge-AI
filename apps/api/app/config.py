@@ -74,6 +74,16 @@ class Settings:
         "TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886"
     )
 
+    # --- Voice intake (Phase 7) ---------------------------------------------
+    # The transcription provider follows the same interface-plus-mock pattern:
+    # "mock" (default) has no speech-to-text backend, so an audio-only
+    # submission fails closed at the route. The browser can always send a
+    # transcript it produced itself (SpeechRecognition); "http" posts the audio
+    # blob to VOICE_TRANSCRIPTION_URL and expects {"text": "..."} back.
+    voice_provider: str = os.getenv("VOICE_PROVIDER", "mock").strip().lower()
+    voice_transcription_url: str = os.getenv("VOICE_TRANSCRIPTION_URL", "")
+    voice_transcription_api_key: str = os.getenv("VOICE_TRANSCRIPTION_API_KEY", "")
+
     def validate_auth_config(self) -> None:
         """Fail fast on auth settings that would be unsafe or unusable.
 

@@ -72,9 +72,10 @@ def metrics_text() -> tuple[bytes, str]:
 
 def _probe_db() -> None:
     try:
+        from sqlalchemy import text
+
         from app.config import settings
         from app.db.session import engine
-        from sqlalchemy import text
 
         if not settings.database_url:
             DB_UP.set(0.0)

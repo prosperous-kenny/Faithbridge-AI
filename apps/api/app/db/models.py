@@ -501,3 +501,84 @@ class AuditLog(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     actor: Mapped["User | None"] = relationship()
+
+
+class Volunteer(Base):
+    """A volunteer profile: skills plus when they can work (PRD §14).
+
+    One row per user; re-registering updates the profile instead of creating a
+    second one (``ix_volunteers_user_id`` is unique). CASCADE on both FKs
+    because the profile is owned data: it is meaningless without the user who
+    filled it in or the organization that fields it.
+    """
+
+    __tablename__ = "volunteers"
+    __table_args__ = (
+        UniqueConstraint("user_id", name="ix_volunteers_user_id"),
+        Index("ix_volunteers_organization_id", "organization_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    organization_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    skills: Mapped[list[str]] = mapped_column(
+        ARRAY(String(50)), nullable=False, server_default=text("'{}'")
+    )
+    # Availability slot tokens, e.g. weekend_evening (see services/volunteering).
+    availability: Mapped[list[str]] = mapped_column(
+        ARRAY(String(30)), nullable=False, server_default=text("'{}'")
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default=text("true")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+    user: Mapped["User"] = relationship()
+    organization: Mapped["Organization"] = relationship()
+
+
+class FraudFlag(Base):
+    """A pending abuse signal awaiting human review (PRD §22).
+
+    Screening never blocks a submission — a false positive that hid a real
+    need would be worse than a review — so this row is the record of *why*
+    something looked wrong, for a leader to confirm or dismiss. Like the
+    audit trail, it outlives the rows it concerns: SET NULL on both FKs.
+    """
+
+    __tablename__ = "fraud_flags"
+    __table_args__ = (
+        Index("ix_fraud_flags_organization_id", "organization_id"),
+        Index("ix_fraud_flags_request_id", "request_id"),
+        Index("ix_fraud_flags_status", "status"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    organization_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True
+    )
+    request_id: Mapped[int | None] = mapped_column(
+        Integer,
+        ForeignKey("assistance_requests.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    # Rule name (duplicate_request, submission_burst) and reviewer status:
+    # open → confirmed / dismissed, with open allowing a re-open.
+    rule: Mapped[str] = mapped_column(String(50), nullable=False)
+    severity: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="medium", server_default=text("'medium'")
+    )
+    detail: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="open", server_default=text("'open'")
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    request: Mapped["AssistanceRequest | None"] = relationship()

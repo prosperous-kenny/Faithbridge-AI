@@ -32,6 +32,19 @@ GUARDED_ROUTES = [
     ("GET", f"{API}/donors/preferences/", {"donor", "admin"}),
     ("PUT", f"{API}/donors/preferences/", {"donor", "admin"}),
     ("POST", f"{API}/ai/match-donors", {"donor", "admin"}),
+    # Phase 7: voice intake shares the typed route's guard; fraud review and
+    # the volunteer directory are handler concerns; registering a volunteer
+    # profile is open to all four roles (PRD §5 volunteering).
+    (
+        "POST",
+        f"{API}/assistance/voice/requests",
+        {"community_member", "faith_leader", "admin"},
+    ),
+    ("GET", f"{API}/fraud/flags", {"faith_leader", "admin"}),
+    ("PATCH", f"{API}/fraud/flags/1", {"faith_leader", "admin"}),
+    ("POST", f"{API}/volunteers", {"community_member", "donor", "faith_leader", "admin"}),
+    ("GET", f"{API}/volunteers", {"faith_leader", "admin"}),
+    ("POST", f"{API}/volunteers/match", {"faith_leader", "admin"}),
 ]
 
 ROLE_NAMES = [role.value for role in Role]
@@ -255,6 +268,10 @@ def _payload_for(method: str, path: str) -> dict:
         # No prefs are saved for these users, so the handler answers 400
         # before touching the AI service — still "not 403", which is all the
         # role matrix asserts.
+        return {}
+    if "volunteers" in path and method == "POST":
+        # These matrix users have no organization, so the handler answers 422
+        # before any write — again "not 403".
         return {}
     if method == "POST":
         return {

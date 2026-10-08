@@ -81,7 +81,7 @@ async def match_jobs(
                 "employer": placement.employer,
                 "role_title": placement.role_title,
                 "status": placement.status,
-                "score": int(round(score)),
+                "score": round(score),
                 "matched_skills": matched,
             }
         )

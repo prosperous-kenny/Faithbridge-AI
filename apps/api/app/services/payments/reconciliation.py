@@ -10,10 +10,11 @@ money movement is never written without an explicit transition.
 
 from __future__ import annotations
 
-from app.db.models import Donation
-from app.services.payments.provider import get_payment_provider
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.db.models import Donation
+from app.services.payments.provider import get_payment_provider
 
 # Statuses the ledger considers money actually moved (paid or beyond).
 _MOVED = ("paid", "allocated", "distributed")

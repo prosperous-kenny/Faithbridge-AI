@@ -11,12 +11,16 @@ from app.api.routes import (
     auth,
     dashboard,
     donations,
+    employment,
+    fraud,
     health,
     impact,
     notifications,
     preferences,
     privacy,
     programs,
+    voice,
+    volunteers,
 )
 from app.config import settings
 from app.db import models  # noqa: F401
@@ -79,7 +83,15 @@ def create_app() -> FastAPI:
     app.include_router(health.router, tags=["system"])
     app.include_router(auth.router, prefix=f"{prefix}/auth", tags=["auth"])
     app.include_router(assistance.router, prefix=f"{prefix}/assistance", tags=["assistance"])
+    app.include_router(
+        voice.router, prefix=f"{prefix}/assistance/voice", tags=["voice"]
+    )
     app.include_router(donations.router, prefix=f"{prefix}/donations", tags=["donations"])
+    app.include_router(
+        employment.router, prefix=f"{prefix}/employment", tags=["employment"]
+    )
+    app.include_router(volunteers.router, prefix=f"{prefix}/volunteers", tags=["volunteers"])
+    app.include_router(fraud.router, prefix=f"{prefix}/fraud", tags=["fraud"])
     app.include_router(impact.router, prefix=f"{prefix}/impact", tags=["impact"])
     app.include_router(dashboard.router, prefix=f"{prefix}/dashboard", tags=["dashboard"])
     app.include_router(privacy.router, prefix=f"{prefix}/privacy", tags=["privacy"])

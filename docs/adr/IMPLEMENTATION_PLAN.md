@@ -705,6 +705,41 @@ Per PRD §14: voice assistant, fraud detection, volunteer matching, mobile appli
 
 **Exit gate:** fraud rules demonstrably flag seeded abuse cases; voice submissions classify at parity with typed ones.
 
+**Implementation status (2026-10-08) — built and verified:**
+
+- **Voice intake** — `POST /assistance/voice/requests` reuses the typed route's
+  org guard, `_validated_classification`, and beneficiary/repository path
+  verbatim; parity is asserted by `test_voice_intake.py`, which sends identical
+  text through both routes against one AI stub and compares responses field by
+  field. Audio rides a `TranscriptionProvider` interface (PRD §14 voice
+  assistant): the default mock fails closed with 503, the `http` adapter posts
+  to `VOICE_TRANSCRIPTION_URL`. Raw audio is never persisted. *Limitation:* no
+  real STT key was exercised on this machine; parity is pipeline parity for an
+  identical transcript, not a WER measurement of the transcription itself.
+- **Fraud screening** — `fraud_flags` table plus two deterministic rules in
+  `services/fraud.py`: near-duplicate open requests from the same beneficiary
+  (Jaccard ≥ 0.8 over 30 days) and account submission bursts (≥ 5 audit rows
+  within 10 minutes, counted server-side). Flag-only by decision: a submission
+  always reaches the queue; leaders confirm/dismiss via `GET/PATCH
+  /fraud/flags` with the decision written to the audit trail. Seeded abuse
+  cases are asserted in `test_fraud.py` (exit gate).
+- **Volunteer matching** — `volunteers` table (skills + six availability
+  slots), self-service registration upsert open to all four roles, and
+  `match_volunteers` (0.6 skill coverage + 0.4 availability coverage) behind
+  leader/admin routes; match payloads carry name and ids only.
+- **PWA** — `app/manifest.json` file convention, generated 192/512 icons
+  (`scripts/generate_icons.py`, committed outputs), `public/sw.js`
+  (network-first navigations, cache-first hashed assets) registered in
+  production only by `components/ServiceWorkerRegister`. Not audited against
+  Lighthouse; offline fallback is the cached shell.
+- **Adjacent fixes** — the Phase 6 employment router was never mounted in
+  `main.py` (five unreachable endpoints); now served under
+  `/employment/placements` and covered by `test_placements.py`, which caught a
+  missing `from_attributes` on `PlacementOut`.
+- **Evidence:** full API suite **179 passed** (ruff clean, `alembic check`
+  clean, migration upgrade/downgrade roundtrip OK); web `typecheck`, `lint`,
+  and `build` green with `/manifest.json` emitted.
+
 ---
 
 ## Cross-cutting work (runs across all phases)

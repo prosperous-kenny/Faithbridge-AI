@@ -8,8 +8,9 @@ administrator works through, so a deletion is a reviewed act performed against
 a record, not a raw DELETE that would silently break the tamper-evident trail.
 """
 
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 revision = "f6c3a8d1b2e7"
 down_revision = "c5d8a4f2e9b1"

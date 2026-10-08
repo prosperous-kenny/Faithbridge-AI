@@ -262,6 +262,10 @@ async def test_all_expected_foreign_keys_exist(clean_db):
             ("placements", "mentor_user_id"),
             ("sent_messages", "organization_id"),
             ("donor_preferences", "donor_id"),
+            ("volunteers", "user_id"),
+            ("volunteers", "organization_id"),
+            ("fraud_flags", "organization_id"),
+            ("fraud_flags", "request_id"),
         }
     async with engine.connect() as conn:
         rows = (

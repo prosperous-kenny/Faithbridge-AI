@@ -10,9 +10,10 @@
 """
 
 import sqlalchemy as sa
-from alembic import op
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.sql import text
+
+from alembic import op
 
 revision = "a9b1c2d3e4f5"
 down_revision = "f6c3a8d1b2e7"
