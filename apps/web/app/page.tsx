@@ -38,10 +38,7 @@ export default function Home() {
     <div>
       <section className="bg-gradient-to-b from-amber-50 to-white">
         <div className="mx-auto max-w-6xl px-6 py-20 text-center">
-          <span className="inline-block rounded-full bg-amber-100 px-4 py-1.5 text-sm font-semibold text-amber-800">
-            Phase 0 — Development Build
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
+          <h1 className="mx-auto max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
             Turning faith-based giving into{" "}
             <span className="text-amber-600">measurable impact</span>
           </h1>

@@ -60,14 +60,6 @@ export default function RootLayout({
 
         <main className="flex-1">{children}</main>
 
-        <footer className="border-t border-slate-200 bg-slate-50">
-          <div className="mx-auto max-w-6xl px-6 py-8">
-            <p className="text-sm text-slate-500">
-              FaithBridge AI — Phase 0 development build. Running locally
-              against PostgreSQL 16.
-            </p>
-          </div>
-        </footer>
         <ServiceWorkerRegister />
       </body>
     </html>
