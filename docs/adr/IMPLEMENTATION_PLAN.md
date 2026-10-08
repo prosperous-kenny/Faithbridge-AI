@@ -738,7 +738,10 @@ Per PRD §14: voice assistant, fraud detection, volunteer matching, mobile appli
   missing `from_attributes` on `PlacementOut`.
 - **Evidence:** full API suite **179 passed** (ruff clean, `alembic check`
   clean, migration upgrade/downgrade roundtrip OK); web `typecheck`, `lint`,
-  and `build` green with `/manifest.json` emitted.
+  and `build` green with `/manifest.json` emitted; **GitHub Actions CI green
+  on all three jobs** — the first hosted runs exposed three CI-only failures
+  (missing `ruff` in the AI dev extras, `tests.*` imports under bare pytest,
+  drift check before migrate), each fixed in `627fae0` / `ec950ff`.
 
 ---
 
@@ -775,7 +778,7 @@ Per PRD §14: voice assistant, fraud detection, volunteer matching, mobile appli
 | Documentation claiming a task is done when the work was not performed | Plans drift from reality; reviewers trust checked-off boxes | **Partially resolved** — the Phase 0 audit records what was wrong and how it was verified. Standing practice: no task is marked done without a test or an executed command behind it |
 | Declared dependencies missing from `pyproject.toml` | Clean installs and CI fail where a local venv happens to work | **Resolved** — `email-validator` found via a clean-checkout simulation; every job is now exercised against a pristine tree before it is called verified |
 | Eval accuracy measured on template-generated data, not real submissions | Inflated confidence in the ≥85% gate | **Known** — 90.3% classification and 1.000 matching precision are reproducible but likely optimistic; replace `apps/ai/eval/dataset.csv` and `matching_dataset.csv` with real submissions / donor–program pairs before the M1 gate claim. Provenance is now a per-row column and both harnesses warn on every run while the data is synthetic |
-| CI workflow written but never executed | The first GitHub run fails on something a local run could not show | **Partially resolved** — all three jobs pass against a clean copy of the tree; the workflow remains unpushed, so the first hosted run is still an unknown |
+| CI workflow written but never executed | The first GitHub run fails on something a local run could not show | **Resolved** — CI now runs on every push and passed green on all three jobs (API lint/tests/migrations, AI lint/tests/eval freshness, web typecheck/lint/build). The first hosted runs did surface three CI-only failures exactly as this risk predicted, each fixed and verified: `ruff` was missing from `apps/ai`'s dev extras (exit 127), bare `pytest` could not import `tests.*` without the `pythonpath` setting, and `alembic check` ran against a database no step had migrated. Warning-only annotations remain for deprecated Node 20 actions and the ubuntu-26.10.19 label migration |
 | Frontend deployed but backend unhosted | Deployed dashboard/status show no live data | **Known** — intentional; Netlify cannot host FastAPI or PostgreSQL. Host the API separately and set `API_URL` once PRD §25 jurisdiction/escrow is decided |
 | `sentence-transformers` comparison never run | Embedding model may beat TF-IDF on real data | Deferred deliberately (torch dependency, CI cost); revisit when real submissions and real donor–program fit pairs exist (see ADR 0001 for classification, ADR 0002 for matching) |
 
