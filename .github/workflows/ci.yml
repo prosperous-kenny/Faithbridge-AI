@@ -62,6 +62,9 @@ jobs:
       - name: Migration smoke test (upgrade head, downgrade base)
         run: python -m tests.test_migrations
 
+      - name: Alembic upgrade (drift check needs an up-to-date target)
+        run: alembic upgrade head
+
       - name: Alembic autogenerate drift check
         run: alembic check
 
