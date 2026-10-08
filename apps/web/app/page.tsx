@@ -53,7 +53,7 @@ export default function Home() {
             <Link href="/dashboard" className="fb-btn-primary">
               Open Dashboard
             </Link>
-            <Link href="/request" className="fb-btn-secondary">
+            <Link href="/request-assistance" className="fb-btn-secondary">
               Submit an Assistance Request
             </Link>
           </div>

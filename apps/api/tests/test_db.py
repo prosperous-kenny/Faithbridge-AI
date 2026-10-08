@@ -3,19 +3,11 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.db.models import Organization, User
-from app.db.session import Base, SessionFactory, engine
-
-
-@pytest.fixture(autouse=True)
-async def _schema():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-    yield
+from app.db.session import SessionFactory
 
 
 @pytest.mark.asyncio
-async def test_round_trip_insert_and_select():
+async def test_round_trip_insert_and_select(clean_db):
     async with SessionFactory() as session:
         session.add(Organization(name="Grace Community Church", org_type="church"))
         session.add(
@@ -39,7 +31,7 @@ async def test_round_trip_insert_and_select():
 
 
 @pytest.mark.asyncio
-async def test_unique_email_constraint():
+async def test_unique_email_constraint(clean_db):
     async with SessionFactory() as session:
         session.add(User(email="dupe@example.org", full_name="A", role="donor"))
         await session.commit()

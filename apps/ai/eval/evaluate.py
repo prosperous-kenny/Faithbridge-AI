@@ -21,6 +21,8 @@ from sklearn.model_selection import train_test_split
 AI_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AI_DIR))
 
+from build_dataset import TEMPLATE_SOURCE  # noqa: E402
+
 from faithbridge_ai.baseline import CATEGORIES, TfidfClassifier  # noqa: E402
 from faithbridge_ai.classifier import classify as rule_classify  # noqa: E402
 
@@ -29,17 +31,52 @@ SEED = 42
 TEST_FRACTION = 0.3
 
 
-def load_dataset(path: Path = DATASET) -> tuple[list[str], list[str]]:
-    texts: list[str] = []
-    labels: list[str] = []
+def load_rows(path: Path = DATASET) -> list[dict]:
+    rows: list[dict] = []
     with path.open(encoding="utf-8") as handle:
         for row in csv.DictReader(handle):
             text = row["text"].strip()
             label = row["category"].strip()
             if text and label:
-                texts.append(text)
-                labels.append(label)
-    return texts, labels
+                rows.append(
+                    {
+                        "text": text,
+                        "category": label,
+                        "source": (row.get("source") or "unlabeled").strip(),
+                    }
+                )
+    return rows
+
+
+def load_dataset(path: Path = DATASET) -> tuple[list[str], list[str]]:
+    rows = load_rows(path)
+    return [r["text"] for r in rows], [r["category"] for r in rows]
+
+
+def provenance(rows: list[dict]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        counts[row["source"]] = counts.get(row["source"], 0) + 1
+    return counts
+
+
+def render_provenance(rows: list[dict]) -> list[str]:
+    counts = provenance(rows)
+    lines = [f"dataset: {len(rows)} rows", "provenance:"]
+    for source, count in sorted(counts.items()):
+        lines.append(f"  {source:<16} {count}")
+    if set(counts) <= {TEMPLATE_SOURCE}:
+        lines.append(
+            "WARNING: every row is template-generated. This measures fit to the "
+            "template"
+        )
+        lines.append(
+            "  library, not field accuracy. PRD §23 requires real submissions "
+            "before the"
+        )
+        lines.append("  launch gate can be claimed as met.")
+    return lines
+
 
 
 def split(texts: list[str], labels: list[str]) -> tuple:
@@ -147,9 +184,13 @@ def write_results(text: str) -> None:
 def main() -> int:
     np.random.seed(SEED)
 
+    rows = load_rows()
     tfidf = evaluate_model("TF-IDF + LinearSVC", "tfidf")
     rules = evaluate_model("Rule-based keywords (current)", "rules")
 
+    for line in render_provenance(rows):
+        print(line)
+    print()
     print(render(tfidf))
     print()
     print(render(rules))
@@ -172,8 +213,8 @@ def main() -> int:
 
 def run_and_write() -> int:
     """Run the harness and persist the full report to results.txt."""
-    import io
     import contextlib
+    import io
 
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):

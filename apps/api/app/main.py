@@ -5,14 +5,33 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.api.routes import assistance, auth, dashboard, donations, health, notifications
+from app.api.routes import (
+    ai,
+    assistance,
+    auth,
+    dashboard,
+    donations,
+    health,
+    impact,
+    notifications,
+    preferences,
+    privacy,
+    programs,
+)
 from app.config import settings
 from app.db import models  # noqa: F401
 from app.db.session import Base, engine
+from app.observability.metrics import MetricsMiddleware, metrics_response
+from app.observability.sentry import init_sentry
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    # Reject unsafe auth configuration before serving a single request:
+    # a process with a weak or missing JWT secret must not get to answer
+    # /auth/login at all.
+    settings.validate_auth_config()
+    init_sentry()
     # Schema is owned by Alembic (Phase 0). create_all is no longer called at
     # startup: it silently diverges from the migration history and hides drift.
     # Run `alembic upgrade head` before starting the API.
@@ -55,15 +74,24 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    app.add_middleware(MetricsMiddleware)
     prefix = settings.api_v1_prefix
     app.include_router(health.router, tags=["system"])
     app.include_router(auth.router, prefix=f"{prefix}/auth", tags=["auth"])
     app.include_router(assistance.router, prefix=f"{prefix}/assistance", tags=["assistance"])
     app.include_router(donations.router, prefix=f"{prefix}/donations", tags=["donations"])
+    app.include_router(impact.router, prefix=f"{prefix}/impact", tags=["impact"])
     app.include_router(dashboard.router, prefix=f"{prefix}/dashboard", tags=["dashboard"])
+    app.include_router(privacy.router, prefix=f"{prefix}/privacy", tags=["privacy"])
     app.include_router(
         notifications.router, prefix=f"{prefix}/notifications", tags=["notifications"]
     )
+    app.include_router(programs.router, prefix=f"{prefix}/programs", tags=["programs"])
+    app.include_router(
+        preferences.router, prefix=f"{prefix}/donors/preferences", tags=["donors"]
+    )
+    app.include_router(ai.router, prefix=f"{prefix}/ai", tags=["ai"])
+    app.add_route("/metrics", metrics_response, methods=["GET"])
     return app
 
 

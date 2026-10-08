@@ -15,6 +15,7 @@ export type DashboardStats = {
   assistance_requests: number;
   donations: number;
   placements: number;
+  impact_events: number;
 };
 
 export type ServiceStatus = {

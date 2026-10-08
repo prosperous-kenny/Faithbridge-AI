@@ -11,8 +11,15 @@ python eval/evaluate.py        # writes eval/results.txt and prints below
 
 - Dataset: 204 labeled statements, 34 per category, six PRD §11 categories
   (`food`, `housing`, `medical`, `education`, `employment`, `emergency`)
+- Provenance: all 204 rows carry `source=template-v1`; there are no real
+  beneficiary submissions in it yet. `evaluate.py` prints this provenance block
+  and a synthetic-data warning on every run.
 - Split: stratified, 30% held out, `random_state=42` — 142 train / 62 test
 - Deterministic: re-running produces identical numbers
+- Leakage: every template contributes exactly one row, so there are no duplicate
+  statements spanning the train/test boundary. This was verified, not assumed —
+  `tests/test_dataset_integrity.py` asserts uniqueness, per-category balance,
+  and that the committed CSV matches the generator exactly.
 
 ## Results
 
@@ -85,8 +92,19 @@ Rationale and the sentence-transformers comparison are in
 The dataset is **template-generated**, not real beneficiary submissions. These
 figures measure performance on natural-phrasing templates written for this
 harness. They are reproducible and they make the gate checkable, but they are a
-weaker proxy than real data and are likely optimistic.
+weaker proxy than real data and are likely optimistic. Two specific reasons the
+number is optimistic:
+
+1. The 204 templates were written by the same author as the model was tuned
+   against, so phrasing regularities in the templates are learnable.
+2. Templates within a category share vocabulary and phrasing, so a model that
+   has seen 28 housing templates is tested on 6 written in the same style.
 
 The dataset's purpose is to make accuracy measurable *before* tuning, which it
 does. Real submissions must replace it before the M1 launch gate in PRD §23 can
 be claimed as met.
+
+To keep that caveat from being lost, provenance is stored per row rather than
+only in prose: `dataset.csv` has a `source` column, the harness reports the
+provenance mix and warns while the data is entirely synthetic, and the warning
+clears itself once rows from another source are added.

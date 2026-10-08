@@ -1,0 +1,96 @@
+{
+  "realm": "faithbridge",
+  "displayName": "FaithBridge AI",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "verifyEmail": false,
+  "sslRequired": "external",
+  "accessTokenLifespan": 900,
+  "ssoSessionIdleTimeout": 1209600,
+  "ssoSessionMaxLifespan": 2592000,
+  "roles": {
+    "realm": [
+      {
+        "name": "community_member",
+        "description": "PRD 12: may submit assistance requests for themselves."
+      },
+      {
+        "name": "donor",
+        "description": "PRD 12: may donate and read their own giving history. Never sees beneficiary PII (PRD 22)."
+      },
+      {
+        "name": "faith_leader",
+        "description": "PRD 12: case handler. Reads assistance requests, including consented beneficiary PII (PRD 22)."
+      },
+      {
+        "name": "admin",
+        "description": "PRD 12: system administrator. Supersedes every other role."
+      }
+    ],
+    "client": {},
+    "clientRole": false
+  },
+  "clients": [
+    {
+      "clientId": "faithbridge-web",
+      "name": "FaithBridge web client",
+      "description": "Browser single-page app. Public client with PKCE, so there is no client secret to commit or leak.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "rootUrl": "http://localhost:3000",
+      "baseUrl": "/",
+      "redirectUris": [
+        "http://localhost:3000/*",
+        "http://localhost:5173/*",
+        "https://*.netlify.app/*"
+      ],
+      "webOrigins": ["http://localhost:3000", "http://localhost:5173", "+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "+"
+      },
+      "protocolMappers": [
+        {
+          "name": "audience is the API",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "aud",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "false",
+            "included.client.audience": "faithbridge-api"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "faithbridge-api",
+      "name": "FaithBridge API audience",
+      "description": "Not a login client. Exists only so access tokens can carry aud=faithbridge-api, which the API enforces on every verified token (AUTH_MODE=oidc, OIDC_AUDIENCE=faithbridge-api). Public with no flows enabled, so it needs no secret.",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "bearerOnly": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false
+    }
+  ]
+}

@@ -1,3 +1,10 @@
+dataset: 204 rows
+provenance:
+  template-v1      204
+WARNING: every row is template-generated. This measures fit to the template
+  library, not field accuracy. PRD §23 requires real submissions before the
+  launch gate can be claimed as met.
+
 === TF-IDF + LinearSVC ===
 train 142 / test 62
 overall accuracy: 0.903

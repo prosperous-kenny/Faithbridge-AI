@@ -79,9 +79,22 @@ def classify(text: str) -> dict:
     if best_category == "emergency" and best_score <= 2:
         best_category = _fallback_category(lowered, words)
 
+    return {"category": best_category, **score_urgency(text)}
+
+
+def score_urgency(text: str) -> dict:
+    """Urgency and priority for a need.
+
+    Category selection and urgency scoring are deliberately separate: the
+    TF-IDF baseline owns the category, while urgency stays on these keyword
+    heuristics until Phase 2 calibrates it against labeled data. Keeping them
+    split means swapping the classifier cannot silently change urgency.
+    """
+    lowered = text.lower()
+    words = set(re.findall(r"[a-z']+", lowered))
     urgency_score = _urgency_score(lowered, words)
-    priority = _priority(lowered, urgency_score)
-    return {"category": best_category, "urgency_score": urgency_score, "priority": priority}
+    return {"urgency_score": urgency_score, "priority": _priority(lowered, urgency_score)}
+
 
 
 def _fallback_category(text: str, words: set[str]) -> str:

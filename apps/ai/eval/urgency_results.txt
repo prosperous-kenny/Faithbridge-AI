@@ -1,0 +1,17 @@
+dataset: 80 rows  provenance: {'urgency-template-v1'}
+
+=== Urgency calibration (TF-IDF word+char -> LinearSVC) ===
+train 56 / test 24
+band accuracy: 0.750
+
+per-priority-band (support / precision / recall / f1):
+  critical   support=  6  precision=0.833  recall=0.833  f1=0.833
+  high       support=  6  precision=0.833  recall=0.833  f1=0.833
+  medium     support=  6  precision=0.667  recall=0.667  f1=0.667
+  low        support=  6  precision=0.667  recall=0.667  f1=0.667
+
+WARNING: urgency data is template-generated. This measures fit to the template
+  library, not field accuracy. PRD requirement 23 needs real submissions
+  the launch gate can be claimed as met.
+
+urgency gate: PASS

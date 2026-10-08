@@ -1,7 +1,8 @@
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr, Field
 
+from app.core.rbac import Role, require_role
 from app.services.email import send_email
 
 router = APIRouter()
@@ -19,7 +20,13 @@ class EmailTestOut(BaseModel):
     provider_id: str | None = None
 
 
-@router.post("/email/test", response_model=EmailTestOut)
+@router.post(
+    "/email/test",
+    response_model=EmailTestOut,
+    # This endpoint sends mail to an arbitrary address supplied by the caller,
+    # so it is an admin-only diagnostic, not a general facility.
+    dependencies=[Depends(require_role(Role.ADMIN))],
+)
 async def test_email(payload: EmailTestIn) -> EmailTestOut:
     result = await send_email(payload.to, payload.subject, payload.body)
     return EmailTestOut(

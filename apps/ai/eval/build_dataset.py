@@ -11,11 +11,15 @@ across runs and the report is reproducible.
 
 Run:  python eval/build_dataset.py
 """
-
 import csv
 from pathlib import Path
 
 CATEGORIES = ["food", "housing", "medical", "education", "employment", "emergency"]
+
+# Marks every row written by this generator. PRD §23's classification gate is
+# measured on real submissions; a dataset containing only this source cannot
+# satisfy it, and the harness reports it on every run.
+TEMPLATE_SOURCE = "template-v1"
 
 # (category, urgency_band) -> list of sentence templates.
 # {n} is substituted with a household size to vary numeric context.
@@ -239,13 +243,19 @@ TEMPLATES: dict[str, list[str]] = {
 }
 
 
-def build_rows() -> list[tuple[str, str]]:
-    rows: list[tuple[str, str]] = []
+def build_rows() -> list[tuple[str, str, str]]:
+    """(text, category, source) rows.
+
+    `source` is recorded per row so provenance travels with the data instead of
+    living only in prose. TEMPLATE_SOURCE means the row is synthetic and must
+    not be presented as evidence of field accuracy.
+    """
+    rows: list[tuple[str, str, str]] = []
     sizes = [2, 3, 4, 5, 6]
     for category, templates in TEMPLATES.items():
         for index, template in enumerate(templates):
             size = sizes[index % len(sizes)]
-            rows.append((template.format(n=size), category))
+            rows.append((template.format(n=size), category, TEMPLATE_SOURCE))
     return rows
 
 
@@ -258,11 +268,11 @@ def main() -> None:
     # LF-only on every platform; CI diffs it after regenerating.
     with out_path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle, lineterminator="\n")
-        writer.writerow(["text", "category"])
+        writer.writerow(["text", "category", "source"])
         writer.writerows(rows)
 
     counts: dict[str, int] = {}
-    for _, category in rows:
+    for _, category, _ in rows:
         counts[category] = counts.get(category, 0) + 1
 
     print(f"wrote {len(rows)} rows to {out_path}")

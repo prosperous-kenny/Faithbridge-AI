@@ -1,0 +1,81 @@
+text,urgency_score,band,source
+We could use some help arranging transport to a job interview next month,22,low,urgency-template-v1
+I would appreciate guidance on budgeting for our household of 3,26,low,urgency-template-v1
+We might need help with school supplies later in the term,30,low,urgency-template-v1
+I want to explore support options for paying down our electricity bill slowly,34,low,urgency-template-v1
+Our family could use advice on affordable housing in the area,38,low,urgency-template-v1
+I am hoping to find a training course to improve my CV sometime soon,24,low,urgency-template-v1
+We are planning for next term and would like information on available programs,28,low,urgency-template-v1
+I would like help understanding how to apply for assistance forms,32,low,urgency-template-v1
+I am comparing options for food support in case we need it this winter,23,low,urgency-template-v1
+We might look for help with a deposit if we decide to move next year,27,low,urgency-template-v1
+I want to ask about the rent support scheme that a friend mentioned,31,low,urgency-template-v1
+Our children may need uniforms when the fee schedule changes later,35,low,urgency-template-v1
+I would like to know what documentation a housing application needs,39,low,urgency-template-v1
+We are thinking about how to manage school costs for the longer term,25,low,urgency-template-v1
+I want advice on saving for medicine in case our situation stays as is,29,low,urgency-template-v1
+We may need support with utilities after the cold season arrives,33,low,urgency-template-v1
+I am researching employment programs for when my contract ends,37,low,urgency-template-v1
+Our family could use a referral to a financial planning group,21,low,urgency-template-v1
+I would like details on requirements before we apply for anything,36,low,urgency-template-v1
+We hope to find help with a small project at the parish later,30,low,urgency-template-v1
+We need some help with groceries before the end of the month,42,medium,urgency-template-v1
+I need support paying for transport to keep my job,46,medium,urgency-template-v1
+Our children need uniforms before school starts next week,50,medium,urgency-template-v1
+We are looking for help with paying a portion of this month's rent,54,medium,urgency-template-v1
+I need assistance covering the cost of a clinic visit,58,medium,urgency-template-v1
+We could use help buying food for the coming fortnight,44,medium,urgency-template-v1
+I need help with the application costs for a training program,48,medium,urgency-template-v1
+Our household needs support with utilities while we look for work,52,medium,urgency-template-v1
+We need help covering the bus fare to get to our appointment,43,medium,urgency-template-v1
+I need support with the fee for a certification I am applying for,47,medium,urgency-template-v1
+Our family needs help replacing a few school books that are worn out,51,medium,urgency-template-v1
+We are hoping for assistance with the deposit on a modest apartment,55,medium,urgency-template-v1
+I need help with a small portion of the payment for my clinic tests,59,medium,urgency-template-v1
+We could use help with the basic groceries for the next couple of weeks,45,medium,urgency-template-v1
+I need assistance to register for a course starting soon,49,medium,urgency-template-v1
+Our household needs support with the heating bill this month,53,medium,urgency-template-v1
+We need help with the cost of a repair so we can keep working,57,medium,urgency-template-v1
+I need support with the fees for my children's day care,41,medium,urgency-template-v1
+Our family needs help with a few expenses while my wages reset,56,medium,urgency-template-v1
+We are asking for assistance with groceries for the coming weeks,44,medium,urgency-template-v1
+I lost my job and cannot pay the rent that is due this week,62,high,urgency-template-v1
+We are behind on bills and our water service may be cut off any day,66,high,urgency-template-v1
+I need help with medicine my doctor says I cannot stop taking,70,high,urgency-template-v1
+Our family is running out of food and payday is two weeks away,74,high,urgency-template-v1
+I cannot afford the hospital fees for treatment that starts this week,78,high,urgency-template-v1
+We are being asked to leave our home soon and need rent help now,64,high,urgency-template-v1
+My child's school fees are unpaid and she is being sent home,68,high,urgency-template-v1
+We have no money left for food and the fridge is empty tonight,72,high,urgency-template-v1
+Our rent is overdue and the landlord says pay or move out,63,high,urgency-template-v1
+I cannot buy the medication and my supply runs out within days,67,high,urgency-template-v1
+We are behind on our utility bill and the account may be closed,71,high,urgency-template-v1
+My wages stopped and there is no money for food this week,75,high,urgency-template-v1
+The clinic says I must start treatment soon and we cannot pay,79,high,urgency-template-v1
+We are at risk of losing the apartment without help this month,65,high,urgency-template-v1
+My school fees are overdue and I cannot register for the term,69,high,urgency-template-v1
+We have no income left and the cupboard is nearly empty,73,high,urgency-template-v1
+I cannot afford the repair and without it I cannot get to work,61,high,urgency-template-v1
+Our family is short on rent and the notice is already here,64,high,urgency-template-v1
+We need money for food before the savings fully run out,76,high,urgency-template-v1
+I am behind on the clinic bill and my care may be paused,77,high,urgency-template-v1
+We are being evicted tomorrow and need emergency housing tonight,82,critical,urgency-template-v1
+Our house caught fire and we have nowhere to sleep tonight,86,critical,urgency-template-v1
+I need urgent surgery and cannot pay unless we get help today,90,critical,urgency-template-v1
+There is no food and no money and our children have not eaten for two days,94,critical,urgency-template-v1
+A flood destroyed our home and we need emergency relief immediately,98,critical,urgency-template-v1
+We are homeless from tonight and need shelter for the family right away,84,critical,urgency-template-v1
+My father needs urgent dialysis and we cannot afford it,88,critical,urgency-template-v1
+The landlord is locking us out asap unless we pay everything now,92,critical,urgency-template-v1
+Our home is uninhabitable right now and we need a place to stay tonight,83,critical,urgency-template-v1
+"I need emergency help today, our gas has been shut off with a baby inside",87,critical,urgency-template-v1
+We have no food tonight and no money until an unknown date,91,critical,urgency-template-v1
+A sudden medical emergency today means we need help with the bill now,95,critical,urgency-template-v1
+Our building is flooding now and we need to leave immediately,99,critical,urgency-template-v1
+The eviction is happening this morning and we need urgent assistance,85,critical,urgency-template-v1
+We lost everything in the fire and need help with shelter tonight,89,critical,urgency-template-v1
+"I need critical support right now, my medication cannot wait until tomorrow",93,critical,urgency-template-v1
+Our family has nowhere to sleep tonight after the storm,81,critical,urgency-template-v1
+We are being turned out of the house today and need help at once,96,critical,urgency-template-v1
+A disaster left us with nothing and we need emergency support this hour,100,critical,urgency-template-v1
+My child is in danger tonight and we need immediate shelter,90,critical,urgency-template-v1

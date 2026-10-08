@@ -1,0 +1,16 @@
+donor_id,causes,budget,location,expected_program_ids,source
+1,food,500.0,Lagos,"1,3,2",matching-template-v1
+2,food,300.0,Lagos,"1,3,2",matching-template-v1
+3,food,600.0,Accra,"2,1,3",matching-template-v1
+4,housing,900.0,Lagos,"4,6,5",matching-template-v1
+5,housing,500.0,Accra,"6,4,5",matching-template-v1
+6,medical,2000.0,Lagos,"7,9,8",matching-template-v1
+7,medical,400.0,Accra,"8,9,7",matching-template-v1
+8,education,1000.0,Lagos,"10,12,11",matching-template-v1
+9,employment,500.0,Accra,"14,13,15",matching-template-v1
+10,emergency,2000.0,Lagos,"17,18,16",matching-template-v1
+11,"food,medical",500.0,Lagos,"1,3,7",matching-template-v1
+12,"housing,emergency",1000.0,Lagos,"4,6,17",matching-template-v1
+13,"education,employment",2000.0,Accra,"11,14,10",matching-template-v1
+14,,700.0,Lagos,"7,13,17",matching-template-v1
+15,"medical,emergency",300.0,Accra,"8,18,16",matching-template-v1

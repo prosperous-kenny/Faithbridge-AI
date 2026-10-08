@@ -1,35 +1,61 @@
-from fastapi.testclient import TestClient
-
-from app.main import app
-
-client = TestClient(app)
-
-
-def test_health():
+async def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
 
 
-def test_register_stub():
-    response = client.post("/api/v1/auth/register")
-    assert response.status_code == 201
-    assert response.json()["message"].startswith("registration")
+async def test_register_reaches_the_auth_handler(client, clean_db):
+    """Registration is implemented now: a valid payload gets a 201, not a stub."""
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "routes-check@example.org",
+            "password": "correct-horse-1",
+            "full_name": "Routes Check",
+            "role": "community_member",
+        },
+    )
+    assert response.status_code == 201, response.text
+    assert response.json()["role"] == "community_member"
 
 
-def test_assistance_returns_503_when_ai_unavailable(monkeypatch):
+async def test_assistance_returns_503_when_ai_unavailable(
+    client, make_user, monkeypatch
+):
     async def unavailable() -> bool:
         return False
 
     monkeypatch.setattr("app.api.routes.assistance.ai_service_available", unavailable)
-    response = client.post("/api/v1/assistance/requests", json={"description": "I need help with rent this month"})
+    admin = await make_user("admin")
+    response = client.post(
+        "/api/v1/assistance/requests",
+        json={
+            "organization_id": 1,
+            "description": "I need help with rent this month",
+        },
+        headers=_bearer(admin),
+    )
     assert response.status_code == 503
 
 
-def test_dashboard_stats_returns_counts():
+async def test_dashboard_stats_is_guarded(client, clean_db):
+    """Anonymous callers get 401 before any counting happens."""
     response = client.get("/api/v1/dashboard/stats")
+    assert response.status_code == 401
+    assert response.headers.get("WWW-Authenticate") == "Bearer"
+
+
+async def test_dashboard_stats_returns_counts(client, make_user):
+    admin = await make_user("admin")
+    response = client.get("/api/v1/dashboard/stats", headers=_bearer(admin))
     assert response.status_code == 200
     body = response.json()
     assert "assistance_requests" in body
     assert "donations" in body
     assert all(isinstance(v, int) for v in body.values())
+
+
+def _bearer(user) -> dict[str, str]:
+    from app.core.security import create_access_token
+
+    return {"Authorization": f"Bearer {create_access_token(user.id, user.role)}"}

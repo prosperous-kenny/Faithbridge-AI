@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AssistanceResult } from "@/lib/assistance";
+import { PRIORITY_STYLES } from "@/lib/assistance";
 
 const SAMPLES = [
   "Family of four needs food support after losing income this month.",
@@ -10,15 +11,9 @@ const SAMPLES = [
   "Seeking employment coaching and job placement support.",
 ];
 
-const PRIORITY_STYLES: Record<string, string> = {
-  critical: "bg-red-100 text-red-800",
-  high: "bg-orange-100 text-orange-800",
-  medium: "bg-amber-100 text-amber-800",
-  low: "bg-slate-100 text-slate-700",
-};
-
 export default function RequestForm() {
   const [description, setDescription] = useState("");
+  const [organizationId, setOrganizationId] = useState("1");
   const [result, setResult] = useState<AssistanceResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,16 +24,31 @@ export default function RequestForm() {
     setError(null);
     setResult(null);
 
+    const organization_id = Number(organizationId);
+    if (!Number.isInteger(organization_id) || organization_id < 1) {
+      setError("Organization ID must be a positive whole number.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/assistance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description }),
+        body: JSON.stringify({ description, organization_id }),
       });
 
       if (!res.ok) {
         const body = await res.json().catch(() => null);
-        throw new Error(body?.detail ?? `Request failed (HTTP ${res.status})`);
+        const detail =
+          typeof body?.detail === "string"
+            ? body.detail
+            : `Request failed (HTTP ${res.status})`;
+        const authHint =
+          res.status === 401
+            ? " Sign-in is not wired to this page yet; point a faith-leader or member at the local API, or set FAITHBRIDGE_ACCESS_TOKEN."
+            : "";
+        throw new Error(`${detail}${authHint}`);
       }
 
       setResult((await res.json()) as AssistanceResult);
@@ -89,12 +99,33 @@ export default function RequestForm() {
           ))}
         </div>
 
+        <label
+          htmlFor="organizationId"
+          className="mt-6 block font-semibold text-slate-900"
+        >
+          Organization ID
+        </label>
+        <p className="mt-1 text-sm text-slate-600">
+          The organization whose queue should receive this request.
+        </p>
+        <input
+          id="organizationId"
+          type="number"
+          min={1}
+          step={1}
+          value={organizationId}
+          onChange={(e) => setOrganizationId(e.target.value)}
+          className="mt-2 w-full rounded-lg border border-slate-300 p-3 text-slate-900
+            focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-200
+            sm:w-64"
+        />
+
         <button
           type="submit"
           disabled={loading || description.trim().length < 10}
           className="fb-btn-primary mt-6"
         >
-          {loading ? "Classifying…" : "Classify Request"}
+          {loading ? "Submitting…" : "Submit Request"}
         </button>
       </form>
 
@@ -108,7 +139,9 @@ export default function RequestForm() {
       {result && (
         <div className="fb-card mt-6 border-green-200 bg-green-50">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-semibold text-slate-900">Classification</h2>
+            <h2 className="font-semibold text-slate-900">
+              Request recorded
+            </h2>
             <span
               className={`rounded-full px-3 py-1 text-xs font-bold uppercase ${
                 PRIORITY_STYLES[result.priority] ?? PRIORITY_STYLES.low
@@ -147,7 +180,7 @@ export default function RequestForm() {
                 Reference
               </dt>
               <dd className="mt-1 font-mono text-sm text-slate-700">
-                {result.id}
+                #{result.id}
               </dd>
             </div>
           </dl>

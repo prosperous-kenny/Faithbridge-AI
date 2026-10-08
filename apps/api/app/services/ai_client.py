@@ -27,3 +27,16 @@ async def classify_need(text: str) -> dict:
             "urgency_score": payload["urgency_score"],
             "priority": payload["priority"],
         }
+
+
+async def match_donors(payload: dict) -> dict:
+    """Ask the AI service to rank a program pool against the donor's
+    preferences. The payload carries no beneficiary data, so the response is
+    PII-free by construction (PRD §22)."""
+    async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+        response = await client.post(
+            f"{settings.ai_service_url}/match-donors",
+            json=payload,
+        )
+        response.raise_for_status()
+        return response.json()
