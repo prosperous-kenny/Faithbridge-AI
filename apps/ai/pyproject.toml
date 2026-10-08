@@ -20,7 +20,8 @@ ml = ["scikit-learn>=1.5"]
 # for the default path: pulls torch (~2GB) and must stay optional so CI does not
 # download it. Install explicitly with `pip install -e ".[embeddings]"`.
 embeddings = ["sentence-transformers>=3"]
-dev = ["pytest>=8", "httpx>=0.27"]
+# ruff is installed here too: CI runs `ruff check .` after `pip install -e ".[dev]"`.
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.4"]
 
 [tool.ruff]
 line-length = 100

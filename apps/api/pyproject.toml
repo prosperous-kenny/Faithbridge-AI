@@ -40,5 +40,8 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Make `tests.*` imports resolvable for every invocation style (bare pytest,
+# python -m pytest, CI), not just those that put cwd on sys.path.
+pythonpath = ["."]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
