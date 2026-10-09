@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.config import settings
+from app.config import _normalize_database_url, settings
 from app.db import models  # noqa: F401
 from app.db.session import Base
 
@@ -16,7 +16,7 @@ config = context.config
 # the caller (the migration smoke test points this at a throwaway database),
 # then a -x sqlalchemy.url argument, then the app settings. settings is only a
 # fallback, so tests can never accidentally migrate a real database.
-_url = (
+_url = _normalize_database_url(
     context.get_x_argument(as_dictionary=True).get("sqlalchemy.url")
     or config.get_main_option("sqlalchemy.url")
     or settings.database_url

@@ -28,3 +28,6 @@ Thumbs.db
 
 # Local service logs from infra/start-local-stack.ps1
 infra/logs/
+
+# Vercel CLI project links (contain the project id, not secrets)
+.vercel/

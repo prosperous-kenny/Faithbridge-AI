@@ -8,13 +8,28 @@ VALID_AUTH_MODES = ("local", "oidc")
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 
+def _normalize_database_url(url: str) -> str:
+    """Make provider-issued URLs usable by the asyncpg driver.
+
+    Managed Postgres (Neon, Vercel Postgres) hands out ``postgres://`` URLs
+    with an ``sslmode`` query parameter. SQLAlchemy needs the explicit asyncpg
+    dialect and the driver's ``ssl`` key, so both are translated here. Local
+    ``postgresql+asyncpg://`` URLs pass through untouched.
+    """
+    if url.startswith(("postgres://", "postgresql://")):
+        url = "postgresql+asyncpg://" + url.split("://", 1)[1]
+    if "sslmode=" in url:
+        url = url.replace("sslmode=", "ssl=")
+    return url
+
+
 class Settings:
     app_name: str = "FaithBridge AI API"
     environment: str = os.getenv("FAITHBRIDGE_ENV", "development")
     api_v1_prefix: str = "/api/v1"
     cors_origins: list[str] = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
     ai_service_url: str = os.getenv("AI_SERVICE_URL", "http://localhost:8200")
-    database_url: str = os.getenv("DATABASE_URL", "")
+    database_url: str = _normalize_database_url(os.getenv("DATABASE_URL", ""))
     db_echo: bool = os.getenv("DB_ECHO", "false").lower() == "true"
     # Escape hatch for local dev only: create tables with create_all instead of
     # requiring `alembic upgrade head`. Never enable in a deployed environment.
@@ -24,7 +39,7 @@ class Settings:
         "EMAIL_FROM", "FaithBridge AI <notifications@example.com>"
     )
 
-    # --- Authentication (Phase 1) -------------------------------------------
+    # --- Authentication (Phase 1) -----------------------------------------
     # Two modes, selected at process start:
     #
     #   local  This API issues and verifies its own HS256 JWTs. Used for

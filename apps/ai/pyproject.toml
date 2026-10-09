@@ -11,11 +11,14 @@ dependencies = [
   "fastapi>=0.111",
   "uvicorn[standard]>=0.30",
   "pydantic>=2.7",
+  # Baseline model. Small, fast, and imported at module load by baseline.py and
+  # calibration.py, so it has to be a runtime dependency, not an extra: the
+  # Vercel Python runtime installs only [project].dependencies, and a missing
+  # scikit-learn would fail the function at import time.
+  "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]
-# Baseline model. Small, fast, installed by default.
-ml = ["scikit-learn>=1.5"]
 # Embedding model comparison (docs/adr/0001-model-selection.md). Not adopted
 # for the default path: pulls torch (~2GB) and must stay optional so CI does not
 # download it. Install explicitly with `pip install -e ".[embeddings]"`.
@@ -32,6 +35,11 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["faithbridge_ai*"]
+
+# Vercel Python runtime: the FastAPI app lives in a package directory, which is
+# not one of the default entrypoint locations, so name it explicitly.
+[tool.vercel]
+entrypoint = "faithbridge_ai.main:app"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

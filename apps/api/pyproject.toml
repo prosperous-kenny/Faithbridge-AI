@@ -38,6 +38,12 @@ dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.4"]
 where = ["."]
 include = ["app*"]
 
+# Vercel Python runtime: the deployment entrypoint. Without this, Vercel scans
+# for app/main.py among the default entrypoint locations; naming it explicitly
+# keeps the deployed function identical to what uvicorn serves locally.
+[tool.vercel]
+entrypoint = "app.main:app"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Make `tests.*` imports resolvable for every invocation style (bare pytest,
