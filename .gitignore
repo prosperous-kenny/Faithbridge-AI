@@ -25,3 +25,6 @@ apps/ai/models/
 
 .DS_Store
 Thumbs.db
+
+# Local service logs from infra/start-local-stack.ps1
+infra/logs/

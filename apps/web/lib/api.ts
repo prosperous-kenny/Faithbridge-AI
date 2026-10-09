@@ -34,13 +34,25 @@ async function probe(
 }
 
 export async function getSystemStatus(): Promise<SystemStatus> {
+  // Frontend-only deployment (no API_URL): probing the localhost fallbacks
+  // would take 4s and then render a misleading "Offline" against services
+  // that were never reachable from here. Report no services instead and let
+  // each page explain the gap.
+  if (!IS_BACKEND_CONFIGURED) {
+    return { services: [], stats: null, checkedAt: new Date().toISOString() };
+  }
+
+  const token = process.env.FAITHBRIDGE_ACCESS_TOKEN;
   const [api, ai, stats] = await Promise.all([
     probe("API", `${API_URL}/health/ready`, (json) => {
       const body = json as ReadinessStatus;
       return `database ${body.database}`;
     }),
     probe("AI service", `${AI_URL}/health`, () => "reachable"),
-    fetch(`${API_URL}/api/v1/dashboard/stats`, { cache: "no-store" })
+    fetch(`${API_URL}/api/v1/dashboard/stats`, {
+      cache: "no-store",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
       .then((res) => (res.ok ? (res.json() as Promise<DashboardStats>) : null))
       .catch(() => null),
   ]);

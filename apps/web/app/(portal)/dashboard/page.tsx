@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSystemStatus } from "@/lib/api";
+import { getSystemStatus, IS_BACKEND_CONFIGURED } from "@/lib/api";
 import {
   loadCommunityInsights,
   type CommunityInsights,
@@ -199,7 +199,17 @@ export default async function PortalDashboardPage() {
           ))}
       </div>
 
-      {!insightsLoad.ok ? (
+      {!IS_BACKEND_CONFIGURED ? (
+        <div className="fb-card mt-10 border-slate-300 bg-slate-100">
+          <p className="font-semibold text-slate-900">Frontend-only deployment</p>
+          <p className="mt-1 text-sm text-slate-700">
+            No <code className="font-mono">API_URL</code> is configured on this
+            deployment, so live counts and insights are unavailable by design.
+            The FastAPI API, AI service, and PostgreSQL run separately and are
+            not hosted on Netlify.
+          </p>
+        </div>
+      ) : !insightsLoad.ok ? (
         <div
           className={`fb-card mt-10 ${
             insightsLoad.status === 401
@@ -221,11 +231,23 @@ export default async function PortalDashboardPage() {
       )}
 
       <h2 className="mt-14 text-xl font-bold text-slate-900">Service health</h2>
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
-        {services.map((service) => (
-          <ServiceCard key={service.name} service={service} />
-        ))}
-      </div>
+      {IS_BACKEND_CONFIGURED ? (
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
+          {services.map((service) => (
+            <ServiceCard key={service.name} service={service} />
+          ))}
+        </div>
+      ) : (
+        <div className="fb-card mt-6 border-slate-300 bg-slate-100">
+          <p className="font-semibold text-slate-900">Not applicable here</p>
+          <p className="mt-1 text-sm text-slate-700">
+            Health probes run against the backend this deployment is connected
+            to. This deployment has no <code className="font-mono">API_URL</code>{" "}
+            configured, so there is nothing to probe — the services are not
+            down, they are simply not hosted alongside a frontend-only site.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

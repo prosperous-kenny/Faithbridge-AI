@@ -41,6 +41,12 @@ async function probe(
 }
 
 export async function getSystemStatus(): Promise<SystemStatus> {
+  // Same guard as lib/api.ts: a frontend-only deployment has nothing to
+  // probe, and a localhost timeout would only render a false outage.
+  if (!IS_BACKEND_CONFIGURED) {
+    return { services: [], stats: null, checkedAt: new Date().toISOString() };
+  }
+
   const [api, ai, stats] = await Promise.all([
     probe("API", `${API_URL}/health/ready`, (json) => {
       const body = json as ReadinessStatus;
