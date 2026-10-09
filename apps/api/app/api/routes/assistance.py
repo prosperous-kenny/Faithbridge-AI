@@ -12,6 +12,7 @@ from app.core.rbac import Role, require_role
 from app.db.session import get_session
 from app.repositories import assistance as assistance_repo
 from app.repositories import audit as audit_repo
+from app.repositories import organizations as organizations_repo
 from app.schemas.assistance import (
     AssistanceRequestDetail,
     AssistanceRequestIn,
@@ -94,6 +95,12 @@ async def create_request(
             status_code=403,
             detail="You can only submit requests to your own organization",
         )
+
+    # A request must land in a queue that exists. Without this the insert would
+    # hit the foreign key and surface as an opaque 500; a missing organization is
+    # a client error, so it is answered as one (same guard the donations route uses).
+    if not await organizations_repo.exists(session, payload.organization_id):
+        raise HTTPException(status_code=404, detail="Organization not found")
 
     if not await ai_service_available():
         raise HTTPException(status_code=503, detail="AI service unavailable")

@@ -206,6 +206,28 @@ async def test_submission_reuses_the_submitters_beneficiary(
         assert len(beneficiary_ids) == 1, "one member maps to one beneficiary"
 
 
+async def test_submission_to_unknown_organization_is_404(
+    client, make_user, login, monkeypatch
+):
+    # A platform admin (no org) may target any organization, so the org guard is
+    # the only thing between a bad id and the insert. A missing org is a client
+    # error and must be answered as one, not surfaced as a 500 from the FK.
+    _stub_ai(monkeypatch)
+    org_id = await _new_org()
+    admin = await make_user("admin")
+
+    response = client.post(
+        f"{API}/assistance/requests",
+        headers=login(admin),
+        json={
+            "organization_id": org_id + 100_000,
+            "description": "This organization does not exist and must be rejected",
+        },
+    )
+    assert response.status_code == 404, response.text
+    assert response.json()["detail"] == "Organization not found"
+
+
 # --- org scoping -------------------------------------------------------------
 
 

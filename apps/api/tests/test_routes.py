@@ -26,11 +26,22 @@ async def test_assistance_returns_503_when_ai_unavailable(
         return False
 
     monkeypatch.setattr("app.api.routes.assistance.ai_service_available", unavailable)
+
+    # The org must exist so the request reaches the AI boundary; org validation
+    # is now checked first and would otherwise mask the fail-closed 503.
+    from app.db.session import SessionFactory
+    from tests import factories
+
+    async with SessionFactory() as session:
+        org = await factories.create_organization(session)
+        await session.commit()
+        org_id = org.id
+
     admin = await make_user("admin")
     response = client.post(
         "/api/v1/assistance/requests",
         json={
-            "organization_id": 1,
+            "organization_id": org_id,
             "description": "I need help with rent this month",
         },
         headers=_bearer(admin),
