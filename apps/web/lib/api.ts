@@ -3,7 +3,7 @@ import type { DashboardStats, ReadinessStatus, SystemStatus } from "./types";
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
 const AI_URL = process.env.AI_SERVICE_URL ?? "http://localhost:8200";
 
-const TIMEOUT_MS = 4000;
+const TIMEOUT_MS = 8000;
 
 /**
  * True when no API host is configured, which is the case on a frontend-only

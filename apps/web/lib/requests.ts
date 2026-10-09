@@ -11,7 +11,7 @@ export const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
 /** True when a token is configured so the UI can explain a 401, not fake it. */
 export const IS_AUTH_CONFIGURED = Boolean(ACCESS_TOKEN);
 
-const TIMEOUT_MS = 4000;
+const TIMEOUT_MS = 8000;
 
 export type QueueQuery = {
   status?: string;

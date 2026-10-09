@@ -10,7 +10,7 @@ const AI_URL = process.env.AI_SERVICE_URL ?? "http://localhost:8200";
 export const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
 export const IS_AUTH_CONFIGURED = Boolean(ACCESS_TOKEN);
 
-const TIMEOUT_MS = 4000;
+const TIMEOUT_MS = 8000;
 
 /**
  * True when no API host is configured, which is the case on a frontend-only

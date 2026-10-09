@@ -392,14 +392,16 @@ harness prints a warning on every run while the data is entirely synthetic.
   remaining unknown, and it happens when the user authorizes a push.
 - **The embedding comparison was not run.** Deferred, not skipped; the rationale
   and revisit trigger are in the ADR. No ~2 GB torch install was performed.
-- **No hosted backend.** Unchanged from the previous milestone; see the
-  deployment note below.
+- **No hosted backend.** ~~Unchanged from the previous milestone; see the
+  deployment note below.~~ **Superseded** — the full stack now runs on Vercel +
+  Neon; see "Production deployment" near the end of this document.
 
 ### Also done in this milestone
 
 Frontend deployed to Netlify at
 `https://deluxe-malasada-7a387b.netlify.app` (frontend only — see the
-deployment note below).
+deployment note below). Netlify was later superseded as the deployment target by
+Vercel; the site is kept as a frontend-only reference.
 
 ---
 
@@ -779,8 +781,70 @@ Per PRD §14: voice assistant, fraud detection, volunteer matching, mobile appli
 | Declared dependencies missing from `pyproject.toml` | Clean installs and CI fail where a local venv happens to work | **Resolved** — `email-validator` found via a clean-checkout simulation; every job is now exercised against a pristine tree before it is called verified |
 | Eval accuracy measured on template-generated data, not real submissions | Inflated confidence in the ≥85% gate | **Known** — 90.3% classification and 1.000 matching precision are reproducible but likely optimistic; replace `apps/ai/eval/dataset.csv` and `matching_dataset.csv` with real submissions / donor–program pairs before the M1 gate claim. Provenance is now a per-row column and both harnesses warn on every run while the data is synthetic |
 | CI workflow written but never executed | The first GitHub run fails on something a local run could not show | **Resolved** — CI now runs on every push and passed green on all three jobs (API lint/tests/migrations, AI lint/tests/eval freshness, web typecheck/lint/build). The first hosted runs did surface three CI-only failures exactly as this risk predicted, each fixed and verified: `ruff` was missing from `apps/ai`'s dev extras (exit 127), bare `pytest` could not import `tests.*` without the `pythonpath` setting, and `alembic check` ran against a database no step had migrated. Warning-only annotations remain for deprecated Node 20 actions and the ubuntu-26.10.19 label migration |
-| Frontend deployed but backend unhosted | Deployed dashboard/status show no live data | **Known** — intentional; Netlify cannot host FastAPI or PostgreSQL. Host the API separately and set `API_URL` once PRD §25 jurisdiction/escrow is decided |
+| Frontend deployed but backend unhosted | Deployed dashboard/status show no live data | **Resolved** — the full stack (web, API, AI) now runs on Vercel against a managed Neon Postgres, deployed and verified end to end; see "Production deployment" below. Auth runs as `FAITHBRIDGE_ENV=staging` + `AUTH_MODE=local` until PRD §25 is decided and an OIDC provider is booted |
 | `sentence-transformers` comparison never run | Embedding model may beat TF-IDF on real data | Deferred deliberately (torch dependency, CI cost); revisit when real submissions and real donor–program fit pairs exist (see ADR 0001 for classification, ADR 0002 for matching) |
+
+---
+
+## Production deployment (Vercel + Neon)
+
+The full stack is deployed and verified end to end.
+
+| Piece | Where | URL |
+| ----- | ----- | --- |
+| Web (Next.js) | Vercel project `faithbridge-web` | https://faithbridge-web.vercel.app |
+| API (FastAPI) | Vercel project `faithbridge-api` (`app.main:app`) | https://faithbridge-api.vercel.app |
+| AI service (FastAPI) | Vercel project `faithbridge-ai` (`faithbridge_ai.main:app`) | https://faithbridge-ai.vercel.app |
+| Database | Neon Postgres via the Vercel marketplace | `faithbridge-db` |
+
+How it is wired:
+
+- Each app is its own Vercel project rooted at its directory (`apps/web`,
+  `apps/api`, `apps/ai`). `tool.vercel.entrypoint` in each `pyproject.toml` names
+  the ASGI app; `vercel.json` sets a 30s `maxDuration`.
+- `DATABASE_URL` stores the raw Neon connection string. The API normalizes it
+  (`postgres://…?sslmode=` → `postgresql+asyncpg://…?ssl=`) in
+  `apps/api/app/config.py`, so asyncpg gets a driver URL it understands.
+- API environment: `FAITHBRIDGE_ENV=staging`, `AUTH_MODE=local`, `JWT_SECRET`
+  (64 hex), `JWT_ACCESS_TTL_SECONDS=604800`, `AI_SERVICE_URL`, `CORS_ORIGINS`,
+  `DATABASE_URL`.
+- Web environment: `API_URL`, `AI_SERVICE_URL`, `FAITHBRIDGE_ACCESS_TOKEN` (a
+  7-day admin token, server-side only — never `NEXT_PUBLIC_`).
+- Deployment Protection (Vercel Authentication) is off on all three projects so
+  the public site and the service-to-service calls succeed.
+
+Fresh-database bootstrap:
+
+```
+cd apps/api
+$env:DATABASE_URL = "<neon unpooled url>"
+python -m alembic upgrade head
+python scripts/bootstrap_admin.py
+```
+
+Verified on the live deployment:
+
+- `GET /health/ready` → `{"database":"up"}`; AI `/health` reports
+  `tfidf-linear-svc` / `tfidf-svc-calibrated` (models train from the committed
+  datasets at cold start).
+- End to end: admin login → member register (201) → member login → `POST
+  /assistance/requests` → 201 with `priority: critical` (AI classification over
+  the web → API → AI → Neon path).
+- `/dashboard` and `/status` render live data and "All services operational".
+
+Deliberate deviation and known limits:
+
+- **Auth is `AUTH_MODE=local` under `FAITHBRIDGE_ENV=staging`.** `production`
+  hard-requires OIDC (Keycloak), whose realm import has never booted here. This
+  is a documented staging cut, not the production gate.
+- Git-connected auto-deploys are not wired (Vercel's GitHub login connection is
+  not set up); deploy with `vercel deploy --prod` from each app directory.
+- The web's `FAITHBRIDGE_ACCESS_TOKEN` is a long-lived admin token because the
+  frontend has no sign-in flow yet; rotate it and shorten `JWT_ACCESS_TTL_SECONDS`
+  once real auth lands.
+- The model-quality caveat still applies: the AI is trained on synthetic
+  template data (see `docs/adr/0001-model-selection.md`), so production outputs
+  are demonstrable but must not be treated as pilot-grade.
 
 ---
 
