@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
-
-/**
- * Optional access token used to reach the authenticated assistance endpoints.
- * The frontend has no sign-in flow yet, so a developer can paste a local-mode
- * JWT here; without it, the API's own 401 is surfaced to the form.
- */
-const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -39,11 +33,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    const token = await getAccessToken();
     const res = await fetch(`${API_URL}/api/v1/assistance/requests`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(ACCESS_TOKEN ? { Authorization: `Bearer ${ACCESS_TOKEN}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({ description, organization_id }),
       cache: "no-store",
@@ -51,14 +46,11 @@ export async function POST(request: Request) {
 
     const data = await res.json().catch(() => null);
 
-    if (res.status === 401 && !ACCESS_TOKEN) {
+    if (res.status === 401 && !token) {
       return NextResponse.json(
         {
           ...(data ?? {}),
-          detail:
-            "This request needs a signed-in user, but the frontend has no " +
-            "sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to a local-mode " +
-            "JWT so the proxy can authenticate to the API.",
+          detail: "Sign in to submit a request.",
         },
         { status: 401 },
       );

@@ -3,12 +3,10 @@ import type {
   ReadinessStatus,
   SystemStatus,
 } from "./types";
+import { getAccessToken } from "./session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
 const AI_URL = process.env.AI_SERVICE_URL ?? "http://localhost:8200";
-
-export const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
-export const IS_AUTH_CONFIGURED = Boolean(ACCESS_TOKEN);
 
 const TIMEOUT_MS = 8000;
 
@@ -47,6 +45,7 @@ export async function getSystemStatus(): Promise<SystemStatus> {
     return { services: [], stats: null, checkedAt: new Date().toISOString() };
   }
 
+  const token = await getAccessToken();
   const [api, ai, stats] = await Promise.all([
     probe("API", `${API_URL}/health/ready`, (json) => {
       const body = json as ReadinessStatus;
@@ -55,8 +54,8 @@ export async function getSystemStatus(): Promise<SystemStatus> {
     probe("AI service", `${AI_URL}/health`, () => "reachable"),
     fetch(
       `${API_URL}/api/v1/dashboard/stats`,
-      ACCESS_TOKEN
-        ? { cache: "no-store", headers: { Authorization: `Bearer ${ACCESS_TOKEN}` } }
+      token
+        ? { cache: "no-store", headers: { Authorization: `Bearer ${token}` } }
         : { cache: "no-store" },
     )
       .then((res) => (res.ok ? (res.json() as Promise<DashboardStats>) : null))
@@ -135,12 +134,12 @@ export type ImpactReportLoad =
   | { ok: true; report: ImpactReport }
   | { ok: false; detail: string; status: number };
 
-async function authFetch(path: string): Promise<Response> {
+async function authFetch(path: string, token: string): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     return await fetch(`${API_URL}${path}`, {
-      headers: { Authorization: `Bearer ${ACCESS_TOKEN ?? ""}` },
+      headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
       signal: controller.signal,
     });
@@ -162,9 +161,7 @@ async function toLoad<T>(
       ok: false,
       status: 401,
       detail:
-        "Insight data needs a faith-leader or admin account, but the frontend " +
-        "has no sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to a " +
-        "local-mode JWT to load it.",
+        "Sign in with a faith-leader or admin account to load this data.",
     };
   }
   if (!res.ok) {
@@ -180,12 +177,13 @@ async function load<T>(
   path: string,
   pick: (json: unknown) => T,
 ): Promise<LoadResult<T>> {
-  if (!ACCESS_TOKEN) {
+  const token = await getAccessToken();
+  if (!token) {
     return { ok: false, status: 401, detail: "Not authenticated" };
   }
   let res: Response;
   try {
-    res = await authFetch(path);
+    res = await authFetch(path, token);
   } catch (err) {
     return {
       ok: false,

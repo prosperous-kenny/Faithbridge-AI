@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
-const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
 
 const KNOWN_CAUSES = [
   "food",
@@ -18,20 +18,18 @@ const KNOWN_CAUSES = [
  * semantics; the caller only needs an authenticated donor token.
  */
 export async function GET() {
-  if (!ACCESS_TOKEN) {
+  const token = await getAccessToken();
+  if (!token) {
     return NextResponse.json(
       {
-        detail:
-          "Preferences need a signed-in donor, but the frontend has no " +
-          "sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to a local-mode " +
-          "donor JWT so the proxy can authenticate to the API.",
+        detail: "Sign in with a donor account to load saved preferences.",
       },
       { status: 401 },
     );
   }
   try {
     const res = await fetch(`${API_URL}/api/v1/donors/preferences/`, {
-      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+      headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
     return NextResponse.json(await res.json().catch(() => null), {
@@ -79,13 +77,11 @@ export async function PUT(request: Request) {
     typeof data.location === "string" && data.location.trim() ? data.location : undefined;
   const budget = data.budget === undefined ? null : data.budget;
 
-  if (!ACCESS_TOKEN) {
+  const token = await getAccessToken();
+  if (!token) {
     return NextResponse.json(
       {
-        detail:
-          "Preferences need a signed-in donor, but the frontend has no " +
-          "sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to a local-mode " +
-          "donor JWT so the proxy can authenticate to the API.",
+        detail: "Sign in with a donor account to save preferences.",
       },
       { status: 401 },
     );
@@ -96,7 +92,7 @@ export async function PUT(request: Request) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         causes: data.causes,

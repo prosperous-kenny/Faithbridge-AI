@@ -1,27 +1,25 @@
 import { NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
-const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
 
 /**
  * GET proxy for the public program directory. Donors see active programs
  * only — the pool the matching endpoint ranks against (PRD §20).
  */
 export async function GET() {
-  if (!ACCESS_TOKEN) {
+  const token = await getAccessToken();
+  if (!token) {
     return NextResponse.json(
       {
-        detail:
-          "The program directory needs an authenticated user, but the " +
-          "frontend has no sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to " +
-          "a local-mode JWT so the proxy can authenticate to the API.",
+        detail: "Sign in to load the program directory.",
       },
       { status: 401 },
     );
   }
   try {
     const res = await fetch(`${API_URL}/api/v1/programs/`, {
-      headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+      headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
     return NextResponse.json(await res.json().catch(() => null), {

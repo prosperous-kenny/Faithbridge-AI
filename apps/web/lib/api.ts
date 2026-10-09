@@ -1,4 +1,5 @@
 import type { DashboardStats, ReadinessStatus, SystemStatus } from "./types";
+import { getAccessToken } from "./session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
 const AI_URL = process.env.AI_SERVICE_URL ?? "http://localhost:8200";
@@ -42,7 +43,7 @@ export async function getSystemStatus(): Promise<SystemStatus> {
     return { services: [], stats: null, checkedAt: new Date().toISOString() };
   }
 
-  const token = process.env.FAITHBRIDGE_ACCESS_TOKEN;
+  const token = await getAccessToken();
   const [api, ai, stats] = await Promise.all([
     probe("API", `${API_URL}/health/ready`, (json) => {
       const body = json as ReadinessStatus;

@@ -45,9 +45,7 @@ export default function RequestForm() {
             ? body.detail
             : `Request failed (HTTP ${res.status})`;
         const authHint =
-          res.status === 401
-            ? " Sign-in is not wired to this page yet; point a faith-leader or member at the local API, or set FAITHBRIDGE_ACCESS_TOKEN."
-            : "";
+          res.status === 401 ? " Please sign in and try again." : "";
         throw new Error(`${detail}${authHint}`);
       }
 

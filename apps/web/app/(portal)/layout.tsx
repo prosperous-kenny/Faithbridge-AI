@@ -1,8 +1,23 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import SignOutButton from "@/components/SignOutButton";
+import { getSession } from "@/lib/session";
 
-export default function PortalLayout({
+const ROLE_LABELS: Record<string, string> = {
+  community_member: "Community member",
+  donor: "Donor",
+  faith_leader: "Faith leader",
+  admin: "Administrator",
+};
+
+export default async function PortalLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getSession();
+  if (!session) {
+    redirect("/login");
+  }
+
   return (
     <div className="bg-slate-50">
       <div className="border-b border-amber-200 bg-amber-50">
@@ -10,7 +25,7 @@ export default function PortalLayout({
           <p className="text-sm font-semibold text-amber-900">
             FaithBridge Assistance Portal
           </p>
-          <nav className="flex gap-2">
+          <nav className="flex flex-wrap items-center gap-2">
             <Link
               href="/dashboard"
               className="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 transition hover:bg-amber-100"
@@ -41,6 +56,10 @@ export default function PortalLayout({
             >
               Donor match
             </Link>
+            <span className="ml-2 rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-900">
+              {ROLE_LABELS[session.role] ?? session.role ?? "Signed in"}
+            </span>
+            <SignOutButton />
           </nav>
         </div>
       </div>

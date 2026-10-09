@@ -1,16 +1,68 @@
 import Link from "next/link";
 import { loadQueue } from "@/lib/requests";
+import { getSession } from "@/lib/session";
 import type { AssistanceRequestDetail } from "@/lib/assistance";
 import {
   PRIORITY_STYLES,
   STATUS_STYLES,
   STATUSES,
 } from "@/lib/assistance";
+import { updateRequestStatus } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Leader Queue — FaithBridge AI",
+};
+
+/**
+ * Legal next states per current status, mirroring the API's lifecycle. Only
+ * these are offered as buttons; the API is still the authority if one is
+ * forced.
+ */
+const ACTIONS: Record<
+  string,
+  { status: string; label: string; className: string }[]
+> = {
+  submitted: [
+    {
+      status: "triaged",
+      label: "Triage",
+      className:
+        "border-blue-200 bg-blue-50 text-blue-800 hover:border-blue-300",
+    },
+    {
+      status: "declined",
+      label: "Decline",
+      className: "border-red-200 bg-red-50 text-red-800 hover:border-red-300",
+    },
+  ],
+  triaged: [
+    {
+      status: "approved",
+      label: "Approve",
+      className:
+        "border-green-200 bg-green-50 text-green-800 hover:border-green-300",
+    },
+    {
+      status: "declined",
+      label: "Decline",
+      className: "border-red-200 bg-red-50 text-red-800 hover:border-red-300",
+    },
+  ],
+  approved: [
+    {
+      status: "fulfilled",
+      label: "Mark fulfilled",
+      className:
+        "border-emerald-200 bg-emerald-50 text-emerald-800 hover:border-emerald-300",
+    },
+    {
+      status: "declined",
+      label: "Decline",
+      className: "border-red-200 bg-red-50 text-red-800 hover:border-red-300",
+    },
+  ],
 };
 
 function Timestamp({ created_at }: { created_at: string }) {
@@ -26,8 +78,15 @@ function Timestamp({ created_at }: { created_at: string }) {
   );
 }
 
-function QueueCard({ request }: { request: AssistanceRequestDetail }) {
+function QueueCard({
+  request,
+  canManage,
+}: {
+  request: AssistanceRequestDetail;
+  canManage: boolean;
+}) {
   const person = request.beneficiary.person;
+  const actions = canManage ? (ACTIONS[request.status] ?? []) : [];
   return (
     <li className="fb-card">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -84,6 +143,23 @@ function QueueCard({ request }: { request: AssistanceRequestDetail }) {
           </p>
         )}
       </div>
+
+      {actions.length > 0 && (
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-slate-100 pt-3">
+          {actions.map((action) => (
+            <form key={action.status} action={updateRequestStatus}>
+              <input type="hidden" name="request_id" value={request.id} />
+              <input type="hidden" name="status" value={action.status} />
+              <button
+                type="submit"
+                className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${action.className}`}
+              >
+                {action.label}
+              </button>
+            </form>
+          ))}
+        </div>
+      )}
     </li>
   );
 }
@@ -99,7 +175,13 @@ export default async function RequestsPage({
   const filtered = STATUSES.includes(status as (typeof STATUSES)[number])
     ? (status as string)
     : undefined;
-  const load = await loadQueue({ status: filtered, sort });
+
+  const [load, session] = await Promise.all([
+    loadQueue({ status: filtered, sort }),
+    getSession(),
+  ]);
+  const canManage =
+    session?.role === "faith_leader" || session?.role === "admin";
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
@@ -163,7 +245,11 @@ export default async function RequestsPage({
       ) : (
         <ul className="mt-8 grid gap-6">
           {load.requests.map((request) => (
-            <QueueCard key={request.id} request={request} />
+            <QueueCard
+              key={request.id}
+              request={request}
+              canManage={canManage}
+            />
           ))}
         </ul>
       )}

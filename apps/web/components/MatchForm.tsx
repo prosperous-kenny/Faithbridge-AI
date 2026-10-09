@@ -95,7 +95,7 @@ export default function MatchForm() {
             : `Matching failed (HTTP ${res.status})`;
         const authHint =
           res.status === 401
-            ? " Sign-in is not wired to this page yet; set FAITHBRIDGE_ACCESS_TOKEN to a donor JWT."
+            ? " Please sign in with a donor account and try again."
             : "";
         throw new Error(`${detail}${authHint}`);
       }

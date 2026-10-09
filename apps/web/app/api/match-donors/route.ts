@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
-const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
 
 const KNOWN_CAUSES = [
   "food",
@@ -57,25 +57,23 @@ export async function POST(request: Request) {
   if (location !== undefined) payload.location = location;
 
   try {
+    const token = await getAccessToken();
     const res = await fetch(`${API_URL}/api/v1/ai/match-donors`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(ACCESS_TOKEN ? { Authorization: `Bearer ${ACCESS_TOKEN}` } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify(payload),
       cache: "no-store",
     });
 
     const data = await res.json().catch(() => null);
-    if (res.status === 401 && !ACCESS_TOKEN) {
+    if (res.status === 401 && !token) {
       return NextResponse.json(
         {
           ...(data ?? {}),
-          detail:
-            "Matching needs a signed-in donor, but the frontend has no " +
-            "sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to a local-mode " +
-            "donor JWT so the proxy can authenticate to the API.",
+          detail: "Sign in with a donor account to match programs.",
         },
         { status: 401 },
       );

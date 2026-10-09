@@ -1,15 +1,7 @@
 import type { AssistanceRequestDetail } from "./assistance";
+import { getAccessToken } from "./session";
 
 const API_URL = process.env.API_URL ?? "http://localhost:8000";
-
-/**
- * Access token for the authenticated queue endpoint. The frontend has no
- * sign-in, so a developer pastes a local-mode faith-leader/admin JWT here.
- */
-export const ACCESS_TOKEN = process.env.FAITHBRIDGE_ACCESS_TOKEN;
-
-/** True when a token is configured so the UI can explain a 401, not fake it. */
-export const IS_AUTH_CONFIGURED = Boolean(ACCESS_TOKEN);
 
 const TIMEOUT_MS = 8000;
 
@@ -26,14 +18,12 @@ export async function loadQueue({
   status,
   sort = "priority",
 }: QueueQuery = {}): Promise<QueueLoad> {
-  if (!ACCESS_TOKEN) {
+  const token = await getAccessToken();
+  if (!token) {
     return {
       ok: false,
       status: 401,
-      detail:
-        "Queue data needs a faith-leader or admin account, but the frontend " +
-        "has no sign-in flow yet. Set FAITHBRIDGE_ACCESS_TOKEN to a " +
-        "local-mode JWT to load it.",
+      detail: "Sign in with a faith-leader or admin account to view the queue.",
     };
   }
 
@@ -48,7 +38,7 @@ export async function loadQueue({
     const res = await fetch(
       `${API_URL}/api/v1/assistance/requests?${params.toString()}`,
       {
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+        headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
         signal: controller.signal,
       },
