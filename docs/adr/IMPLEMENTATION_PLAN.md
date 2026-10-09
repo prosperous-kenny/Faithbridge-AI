@@ -837,8 +837,10 @@ Deliberate deviation and known limits:
 - **Auth is `AUTH_MODE=local` under `FAITHBRIDGE_ENV=staging`.** `production`
   hard-requires OIDC (Keycloak), whose realm import has never booted here. This
   is a documented staging cut, not the production gate.
-- Git-connected auto-deploys are not wired (Vercel's GitHub login connection is
-  not set up); deploy with `vercel deploy --prod` from each app directory.
+- Git-connected auto-deploys are live: each project is linked to
+  `prosperous-kenny/Faithbridge-AI` with root directory `apps/{web,api,ai}` and
+  production branch `main`, so a push to `main` deploys all three.
+  `vercel deploy --prod` remains a manual fallback.
 - The web's `FAITHBRIDGE_ACCESS_TOKEN` is a long-lived admin token because the
   frontend has no sign-in flow yet; rotate it and shorten `JWT_ACCESS_TTL_SECONDS`
   once real auth lands.
