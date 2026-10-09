@@ -401,7 +401,9 @@ harness prints a warning on every run while the data is entirely synthetic.
 Frontend deployed to Netlify at
 `https://deluxe-malasada-7a387b.netlify.app` (frontend only — see the
 deployment note below). Netlify was later superseded as the deployment target by
-Vercel; the site is kept as a frontend-only reference.
+Vercel; it now points at the Vercel API (`API_URL` / `AI_SERVICE_URL` /
+`FAITHBRIDGE_ACCESS_TOKEN` set on the site) and serves the same live system as a
+secondary frontend.
 
 ---
 
@@ -812,6 +814,9 @@ How it is wired:
   7-day admin token, server-side only — never `NEXT_PUBLIC_`).
 - Deployment Protection (Vercel Authentication) is off on all three projects so
   the public site and the service-to-service calls succeed.
+- A secondary frontend runs on Netlify (`deluxe-malasada-7a387b.netlify.app`),
+  pointed at the same Vercel API via `API_URL` / `AI_SERVICE_URL` /
+  `FAITHBRIDGE_ACCESS_TOKEN`; the Vercel deployment remains the primary target.
 
 Fresh-database bootstrap:
 
