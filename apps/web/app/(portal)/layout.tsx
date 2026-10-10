@@ -50,6 +50,14 @@ export default async function PortalLayout({
             >
               Leader queue
             </Link>
+            {session.role === "admin" ? (
+              <Link
+                href="/organizations"
+                className="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 transition hover:bg-amber-100"
+              >
+                Organizations
+              </Link>
+            ) : null}
             <Link
               href="/match"
               className="rounded-lg px-3 py-1.5 text-sm font-medium text-amber-900 transition hover:bg-amber-100"

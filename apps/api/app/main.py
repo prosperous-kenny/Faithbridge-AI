@@ -16,6 +16,7 @@ from app.api.routes import (
     health,
     impact,
     notifications,
+    organizations,
     preferences,
     privacy,
     programs,
@@ -99,6 +100,9 @@ def create_app() -> FastAPI:
         notifications.router, prefix=f"{prefix}/notifications", tags=["notifications"]
     )
     app.include_router(programs.router, prefix=f"{prefix}/programs", tags=["programs"])
+    app.include_router(
+        organizations.router, prefix=f"{prefix}/organizations", tags=["organizations"]
+    )
     app.include_router(
         preferences.router, prefix=f"{prefix}/donors/preferences", tags=["donors"]
     )
