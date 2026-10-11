@@ -29,13 +29,16 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install SDK packages
+      # The ubuntu runner already ships the Android SDK (ANDROID_HOME set);
+      # the setup-android action is skipped because it tries to install the
+      # removed `tools` package. We install the packages we need directly.
+      - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+          SDK_HOME="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMGR=$(find "$SDK_HOME/cmdline-tools" -name sdkmanager -type f | head -n1)
+          echo "Using sdkmanager: $SDKMGR"
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          "$SDKMGR" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
